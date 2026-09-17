@@ -27,7 +27,7 @@ export default function SignupScreen() {
 
     setLoading(true);
 
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email: email.trim(),
       password,
     });
@@ -39,13 +39,28 @@ export default function SignupScreen() {
       return;
     }
 
+    if (!data.session) {
+      Alert.alert(
+        "Account created",
+        "Please check your email and confirm your account before logging in.",
+        [
+          {
+            text: "Go to Login",
+            onPress: () => router.replace("/login"),
+          },
+        ],
+      );
+
+      return;
+    }
+
     Alert.alert(
       "Account created",
-      "Your account has been created. You can now log in.",
+      "Your account has been created successfully.",
       [
         {
-          text: "OK",
-          onPress: () => router.replace("/login"),
+          text: "Continue",
+          onPress: () => router.replace("/"),
         },
       ],
     );

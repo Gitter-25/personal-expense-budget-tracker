@@ -60,7 +60,7 @@ export default function SignupScreen() {
       [
         {
           text: "Continue",
-          onPress: () => router.replace("/"),
+          onPress: () => router.replace("/(tabs)"),
         },
       ],
     );

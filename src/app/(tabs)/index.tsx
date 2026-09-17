@@ -1,7 +1,7 @@
 import { router } from "expo-router";
 import { useEffect } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
-import { supabase } from "../lib/supabase";
+import { supabase } from "../../lib/supabase";
 
 export default function HomeScreen() {
   useEffect(() => {
@@ -48,8 +48,11 @@ export default function HomeScreen() {
       </View>
 
       {/* Add Expense */}
-      <TouchableOpacity className="mt-4 items-center rounded-xl bg-blue-600 py-4">
-        <Text className="text-base font-bold text-white">+ Add Expense</Text>
+      <TouchableOpacity
+        className="absolute right-5 top-14 h-14 w-14 items-center justify-center rounded-full bg-blue-600"
+        onPress={() => router.push("/profile")}
+      >
+        <Text className="text-2xl">⚙️</Text>
       </TouchableOpacity>
 
       {/* Categories */}

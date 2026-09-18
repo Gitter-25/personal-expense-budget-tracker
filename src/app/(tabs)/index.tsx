@@ -7,48 +7,89 @@ type Expense = {
   amount: number;
   description: string | null;
   expense_date: string;
-  categories:
-    | {
-        name: string;
-        icon: string | null;
-      }[]
-    | null;
+  category_id: string | null;
+  category: {
+    name: string;
+    icon: string | null;
+  } | null;
 };
 
 export default function HomeScreen() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loadingExpenses, setLoadingExpenses] = useState(true);
+  const [monthlyBudget] = useState(10000);
+
+  const monthlySpent = expenses.reduce(
+    (total, expense) => total + Number(expense.amount),
+    0,
+  );
+
+  const remainingBudget = monthlyBudget - monthlySpent;
 
   const loadExpenses = useCallback(async () => {
     setLoadingExpenses(true);
 
-    const { data, error } = await supabase
+    const { data: expenseData, error: expenseError } = await supabase
       .from("expenses")
-      .select(
-        `
-        id,
-        amount,
-        description,
-        expense_date,
-        categories (
-          name,
-          icon
-        )
-      `,
-      )
+      .select("id, amount, description, expense_date, category_id")
       .order("expense_date", { ascending: false })
       .order("created_at", { ascending: false });
 
-    setLoadingExpenses(false);
+    console.log("EXPENSE DATA:", expenseData);
 
-    if (error) {
-      Alert.alert("Unable to load expenses", error.message);
+    if (expenseError) {
+      setLoadingExpenses(false);
+      Alert.alert("Unable to load expenses", expenseError.message);
       return;
     }
 
-    setExpenses((data as Expense[]) ?? []);
-  }, []);
+    const categoryIds = [
+      ...new Set(
+        (expenseData ?? [])
+          .map((expense) => expense.category_id)
+          .filter((id): id is string => Boolean(id)),
+      ),
+    ];
 
+    let categoryMap = new Map<string, { name: string; icon: string | null }>();
+
+    if (categoryIds.length > 0) {
+      const { data: categoryData, error: categoryError } = await supabase
+        .from("categories")
+        .select("id, name, icon")
+        .in("id", categoryIds);
+
+      if (categoryError) {
+        setLoadingExpenses(false);
+        Alert.alert("Unable to load categories", categoryError.message);
+        return;
+      }
+
+      categoryMap = new Map(
+        (categoryData ?? []).map((category) => [
+          category.id,
+          {
+            name: category.name,
+            icon: category.icon,
+          },
+        ]),
+      );
+    }
+
+    const formattedExpenses: Expense[] = (expenseData ?? []).map((expense) => ({
+      id: expense.id,
+      amount: expense.amount,
+      description: expense.description,
+      expense_date: expense.expense_date,
+      category_id: expense.category_id,
+      category: expense.category_id
+        ? (categoryMap.get(expense.category_id) ?? null)
+        : null,
+    }));
+
+    setExpenses(formattedExpenses);
+    setLoadingExpenses(false);
+  }, []);
   useEffect(() => {
     loadExpenses();
   }, [loadExpenses]);
@@ -65,19 +106,25 @@ export default function HomeScreen() {
         <View className="mt-6 rounded-2xl bg-gray-900 p-6">
           <Text className="text-sm text-gray-300">Monthly Budget</Text>
 
-          <Text className="mt-1 text-4xl font-bold text-white">₱10,000</Text>
+          <Text className="mt-1 text-xl font-bold text-white">
+            ₱{monthlyBudget.toFixed(2)}
+          </Text>
 
           <View className="my-5 h-px bg-gray-700" />
 
           <View className="flex-row justify-between">
             <View>
               <Text className="text-sm text-gray-400">Total Spent</Text>
-              <Text className="mt-1 text-xl font-bold text-white">₱0</Text>
+              <Text className="mt-1 text-xl font-bold text-white">
+                ₱{monthlySpent.toFixed(2)}
+              </Text>
             </View>
 
             <View>
               <Text className="text-sm text-gray-400">Remaining</Text>
-              <Text className="mt-1 text-xl font-bold text-white">₱10,000</Text>
+              <Text className="mt-1 text-xl font-bold text-white">
+                ₱{remainingBudget.toFixed(2)}
+              </Text>
             </View>
           </View>
         </View>
@@ -107,12 +154,12 @@ export default function HomeScreen() {
                 <View className="flex-row items-center justify-between">
                   <View className="flex-1 flex-row items-center">
                     <Text className="mr-3 text-2xl">
-                      {expense.categories?.[0]?.icon ?? "💰"}
+                      {expense.category?.icon ?? "💰"}
                     </Text>
 
                     <View className="flex-1">
                       <Text className="text-base font-bold text-gray-900">
-                        {expense.categories?.[0]?.name ?? "Uncategorized"}
+                        {expense.category?.name ?? "Uncategorized"}
                       </Text>
 
                       <Text className="mt-1 text-sm text-gray-500">

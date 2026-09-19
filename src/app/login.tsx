@@ -1,7 +1,11 @@
+import * as AuthSession from "expo-auth-session";
 import { router } from "expo-router";
+import * as WebBrowser from "expo-web-browser";
 import { useState } from "react";
 import { Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { supabase } from "../lib/supabase";
+
+WebBrowser.maybeCompleteAuthSession();
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
@@ -32,6 +36,74 @@ export default function LoginScreen() {
     }
 
     router.replace("/(tabs)");
+  };
+
+  const handleGoogleLogin = async () => {
+    try {
+      setLoading(true);
+
+      const redirectTo = AuthSession.makeRedirectUri({
+        scheme: "budgettracker",
+        path: "auth/callback",
+      });
+
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo,
+          skipBrowserRedirect: true,
+        },
+      });
+
+      if (error) {
+        Alert.alert("Google login failed", error.message);
+        return;
+      }
+
+      if (!data.url) {
+        Alert.alert("Google login failed", "Unable to start Google sign-in.");
+        return;
+      }
+
+      const result = await WebBrowser.openAuthSessionAsync(
+        data.url,
+        redirectTo,
+      );
+
+      if (result.type !== "success") {
+        return;
+      }
+
+      const url = new URL(result.url);
+      const code = url.searchParams.get("code");
+
+      if (!code) {
+        Alert.alert(
+          "Google login failed",
+          "No authorization code was returned.",
+        );
+        return;
+      }
+
+      const { error: sessionError } =
+        await supabase.auth.exchangeCodeForSession(code);
+
+      if (sessionError) {
+        Alert.alert("Google login failed", sessionError.message);
+        return;
+      }
+
+      router.replace("/(tabs)");
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "An unexpected error occurred.";
+
+      Alert.alert("Google login failed", message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -82,6 +154,22 @@ export default function LoginScreen() {
         >
           <Text className="text-base font-bold text-white">
             {loading ? "Logging in..." : "Login"}
+          </Text>
+        </TouchableOpacity>
+
+        <View className="my-5 flex-row items-center">
+          <View className="h-px flex-1 bg-gray-200" />
+          <Text className="mx-3 text-sm text-gray-400">OR</Text>
+          <View className="h-px flex-1 bg-gray-200" />
+        </View>
+
+        <TouchableOpacity
+          className="items-center rounded-xl border border-gray-300 bg-white py-4"
+          onPress={handleGoogleLogin}
+          disabled={loading}
+        >
+          <Text className="text-base font-bold text-gray-700">
+            Continue with Google
           </Text>
         </TouchableOpacity>
 

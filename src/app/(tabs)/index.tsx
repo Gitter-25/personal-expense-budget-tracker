@@ -1,5 +1,5 @@
-import { router } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { router, useFocusEffect } from "expo-router";
+import { useCallback, useState } from "react";
 import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { supabase } from "../../lib/supabase";
 
@@ -73,30 +73,33 @@ export default function HomeScreen() {
   const loadExpenses = useCallback(async () => {
     setLoadingExpenses(true);
 
-    const { data: expenseData, error: expenseError } = await supabase
-      .from("expenses")
-      .select("id, amount, description, expense_date, category_id")
-      .order("expense_date", { ascending: false })
-      .order("created_at", { ascending: false });
+    const now = new Date();
+    const currentMonth = `${now.getFullYear()}-${String(
+      now.getMonth() + 1,
+    ).padStart(2, "0")}-01`;
 
-    console.log("EXPENSE DATA:", expenseData);
+    const [expenseResult, budgetResult] = await Promise.all([
+      supabase
+        .from("expenses")
+        .select("id, amount, description, expense_date, category_id")
+        .order("expense_date", { ascending: false })
+        .order("created_at", { ascending: false }),
+
+      supabase
+        .from("budgets")
+        .select("amount")
+        .eq("month", currentMonth)
+        .maybeSingle(),
+    ]);
+
+    const { data: expenseData, error: expenseError } = expenseResult;
+    const { data: budgetData, error: budgetError } = budgetResult;
 
     if (expenseError) {
       setLoadingExpenses(false);
       Alert.alert("Unable to load expenses", expenseError.message);
       return;
     }
-
-    const now = new Date();
-    const currentMonth = `${now.getFullYear()}-${String(
-      now.getMonth() + 1,
-    ).padStart(2, "0")}-01`;
-
-    const { data: budgetData, error: budgetError } = await supabase
-      .from("budgets")
-      .select("amount")
-      .eq("month", currentMonth)
-      .maybeSingle();
 
     if (budgetError) {
       setLoadingExpenses(false);
@@ -153,9 +156,11 @@ export default function HomeScreen() {
     setExpenses(formattedExpenses);
     setLoadingExpenses(false);
   }, []);
-  useEffect(() => {
-    loadExpenses();
-  }, [loadExpenses]);
+  useFocusEffect(
+    useCallback(() => {
+      loadExpenses();
+    }, [loadExpenses]),
+  );
 
   return (
     <ScrollView className="flex-1 bg-gray-100">

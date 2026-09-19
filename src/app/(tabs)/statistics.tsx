@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
+import { useFocusEffect } from "expo-router";
+import { useCallback, useState } from "react";
 import { ActivityIndicator, Alert, ScrollView, Text, View } from "react-native";
 import { supabase } from "../../lib/supabase";
 
@@ -95,9 +96,11 @@ export default function StatisticsScreen() {
     setLoading(false);
   }, []);
 
-  useEffect(() => {
-    loadStatistics();
-  }, [loadStatistics]);
+  useFocusEffect(
+    useCallback(() => {
+      loadStatistics();
+    }, [loadStatistics]),
+  );
 
   // Total spending
   const totalSpent = expenses.reduce(

@@ -113,6 +113,7 @@ export default function StatisticsScreen() {
     monthlyBudget > 0 ? Math.min((totalSpent / monthlyBudget) * 100, 100) : 0;
 
   // Spending by category
+  // Spending by category
   const categoryTotals = categories.map((category) => {
     const total = expenses
       .filter((expense) => expense.category_id === category.id)
@@ -126,6 +127,35 @@ export default function StatisticsScreen() {
       percentage,
     };
   });
+
+  // Last 7 days spending
+  const lastSevenDays = Array.from({ length: 7 }, (_, index) => {
+    const date = new Date();
+
+    date.setDate(date.getDate() - (6 - index));
+
+    const dateString = `${date.getFullYear()}-${String(
+      date.getMonth() + 1,
+    ).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+
+    const total = expenses
+      .filter((expense) => expense.expense_date === dateString)
+      .reduce((sum, expense) => sum + Number(expense.amount), 0);
+
+    return {
+      date: dateString,
+      label: date.toLocaleDateString("en-US", {
+        weekday: "short",
+      }),
+      total,
+    };
+  });
+
+  // Highest spending in a single day
+  const maxDailySpending = Math.max(
+    ...lastSevenDays.map((day) => day.total),
+    1,
+  );
 
   return (
     <ScrollView className="flex-1 bg-gray-100">
@@ -198,6 +228,47 @@ export default function StatisticsScreen() {
               <Text className="mt-2 text-sm text-gray-500">
                 {budgetPercentage.toFixed(1)}% of your budget used
               </Text>
+            </View>
+
+            {/* Last 7 Days */}
+            <View className="mt-6 rounded-2xl bg-white p-5">
+              <Text className="text-lg font-bold text-gray-900">
+                Last 7 Days
+              </Text>
+
+              <Text className="mt-1 text-sm text-gray-500">
+                Your daily spending
+              </Text>
+
+              <View className="mt-6 flex-row items-end justify-between">
+                {lastSevenDays.map((day) => {
+                  const barHeight =
+                    day.total > 0
+                      ? Math.max((day.total / maxDailySpending) * 120, 8)
+                      : 4;
+
+                  return (
+                    <View key={day.date} className="flex-1 items-center">
+                      <Text className="mb-2 text-xs font-medium text-gray-700">
+                        {day.total > 0 ? `₱${day.total.toFixed(0)}` : "₱0"}
+                      </Text>
+
+                      <View className="h-[120px] items-center justify-end">
+                        <View
+                          className="w-7 rounded-t-lg bg-gray-900"
+                          style={{
+                            height: barHeight,
+                          }}
+                        />
+                      </View>
+
+                      <Text className="mt-2 text-xs text-gray-500">
+                        {day.label}
+                      </Text>
+                    </View>
+                  );
+                })}
+              </View>
             </View>
 
             {/* Spending By Category */}

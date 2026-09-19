@@ -46,6 +46,8 @@ export default function HomeScreen() {
             setExpenses((currentExpenses) =>
               currentExpenses.filter((expense) => expense.id !== expenseId),
             );
+
+            Alert.alert("Expense deleted", "The expense has been deleted.");
           },
         },
       ],

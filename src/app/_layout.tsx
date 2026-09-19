@@ -38,6 +38,13 @@ export default function RootLayout() {
           title: "Explore",
         }}
       />
+
+      <Stack.Screen
+        name="edit-expense"
+        options={{
+          title: "Edit Expense",
+        }}
+      />
     </Stack>
   );
 }

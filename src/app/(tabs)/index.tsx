@@ -1,5 +1,6 @@
+import { router } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { Alert, ScrollView, Text, View } from "react-native";
+import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { supabase } from "../../lib/supabase";
 
 type Expense = {
@@ -18,6 +19,47 @@ export default function HomeScreen() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loadingExpenses, setLoadingExpenses] = useState(true);
   const [monthlyBudget, setMonthlyBudget] = useState(0);
+
+  const handleDeleteExpense = (expenseId: string) => {
+    Alert.alert(
+      "Delete Expense",
+      "Are you sure you want to delete this expense?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            const { error } = await supabase
+              .from("expenses")
+              .delete()
+              .eq("id", expenseId);
+
+            if (error) {
+              Alert.alert("Unable to delete expense", error.message);
+              return;
+            }
+
+            setExpenses((currentExpenses) =>
+              currentExpenses.filter((expense) => expense.id !== expenseId),
+            );
+          },
+        },
+      ],
+    );
+  };
+
+  const handleEditExpense = (expense: Expense) => {
+    router.push({
+      pathname: "/edit-expense",
+      params: {
+        id: expense.id,
+      },
+    });
+  };
 
   const monthlySpent = expenses.reduce(
     (total, expense) => total + Number(expense.amount),
@@ -195,6 +237,26 @@ export default function HomeScreen() {
                 <Text className="mt-3 text-xs text-gray-400">
                   {expense.expense_date}
                 </Text>
+
+                <View className="mt-3 flex-row">
+                  <TouchableOpacity
+                    className="mr-2 rounded-lg bg-gray-100 px-3 py-2"
+                    onPress={() => handleEditExpense(expense)}
+                  >
+                    <Text className="text-sm font-medium text-gray-700">
+                      Edit
+                    </Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    className="rounded-lg bg-red-100 px-3 py-2"
+                    onPress={() => handleDeleteExpense(expense.id)}
+                  >
+                    <Text className="text-sm font-medium text-red-600">
+                      Delete
+                    </Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             ))}
           </View>

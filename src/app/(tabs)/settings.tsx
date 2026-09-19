@@ -1,3 +1,4 @@
+import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { Alert, Text, TouchableOpacity, View } from "react-native";
 import { supabase } from "../../lib/supabase";
@@ -16,13 +17,28 @@ export default function SettingsScreen() {
 
     loadUser();
   }, []);
-  const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
 
-    if (error) {
-      Alert.alert("Logout failed", error.message);
-      return;
-    }
+  const handleLogout = () => {
+    Alert.alert("Log Out", "Are you sure you want to log out?", [
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+      {
+        text: "Log Out",
+        style: "destructive",
+        onPress: async () => {
+          const { error } = await supabase.auth.signOut();
+
+          if (error) {
+            Alert.alert("Unable to log out", error.message);
+            return;
+          }
+
+          router.replace("/login");
+        },
+      },
+    ]);
   };
 
   return (
@@ -35,6 +51,7 @@ export default function SettingsScreen() {
 
       <View className="mt-8 rounded-2xl bg-white p-5">
         <Text className="text-lg font-bold text-gray-900">Account</Text>
+
         <Text className="mt-2 text-gray-500">{email}</Text>
 
         <TouchableOpacity

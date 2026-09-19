@@ -1,6 +1,7 @@
 import { useState } from "react";
 import {
   Alert,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   Text,
@@ -8,11 +9,13 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { supabase } from "../../lib/supabase";
 
 export default function BudgetScreen() {
   const [budget, setBudget] = useState("10000");
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    Keyboard.dismiss();
     const amount = Number(budget);
 
     if (!budget.trim() || Number.isNaN(amount) || amount < 0) {
@@ -20,7 +23,40 @@ export default function BudgetScreen() {
       return;
     }
 
-    Alert.alert("Budget", `Budget set to ₱${amount.toFixed(2)}`);
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      Alert.alert("Not logged in", "Please log in again.");
+      return;
+    }
+
+    const now = new Date();
+    const currentMonth = `${now.getFullYear()}-${String(
+      now.getMonth() + 1,
+    ).padStart(2, "0")}-01`;
+
+    const { error } = await supabase.from("budgets").upsert(
+      {
+        user_id: user.id,
+        month: currentMonth,
+        amount,
+      },
+      {
+        onConflict: "user_id,month",
+      },
+    );
+
+    if (error) {
+      Alert.alert("Unable to save budget", error.message);
+      return;
+    }
+
+    Alert.alert(
+      "Budget saved",
+      `Your monthly budget is now ₱${amount.toFixed(2)}.`,
+    );
   };
 
   return (

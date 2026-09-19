@@ -17,7 +17,7 @@ type Expense = {
 export default function HomeScreen() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loadingExpenses, setLoadingExpenses] = useState(true);
-  const [monthlyBudget] = useState(10000);
+  const [monthlyBudget, setMonthlyBudget] = useState(0);
 
   const monthlySpent = expenses.reduce(
     (total, expense) => total + Number(expense.amount),
@@ -42,6 +42,25 @@ export default function HomeScreen() {
       Alert.alert("Unable to load expenses", expenseError.message);
       return;
     }
+
+    const now = new Date();
+    const currentMonth = `${now.getFullYear()}-${String(
+      now.getMonth() + 1,
+    ).padStart(2, "0")}-01`;
+
+    const { data: budgetData, error: budgetError } = await supabase
+      .from("budgets")
+      .select("amount")
+      .eq("month", currentMonth)
+      .maybeSingle();
+
+    if (budgetError) {
+      setLoadingExpenses(false);
+      Alert.alert("Unable to load budget", budgetError.message);
+      return;
+    }
+
+    setMonthlyBudget(Number(budgetData?.amount ?? 0));
 
     const categoryIds = [
       ...new Set(

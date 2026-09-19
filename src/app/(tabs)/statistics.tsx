@@ -9,8 +9,15 @@ type Expense = {
   category_id: string | null;
 };
 
+type Category = {
+  id: string;
+  name: string;
+  icon: string | null;
+};
+
 export default function StatisticsScreen() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
 
   const loadStatistics = useCallback(async () => {
@@ -21,19 +28,44 @@ export default function StatisticsScreen() {
       now.getMonth() + 1,
     ).padStart(2, "0")}-01`;
 
-    const { data, error } = await supabase
+    const { data: expenseData, error: expenseError } = await supabase
       .from("expenses")
       .select("id, amount, expense_date, category_id")
       .gte("expense_date", firstDayOfMonth)
       .order("expense_date", { ascending: false });
 
-    if (error) {
+    if (expenseError) {
       setLoading(false);
-      Alert.alert("Unable to load statistics", error.message);
+      Alert.alert("Unable to load statistics", expenseError.message);
       return;
     }
 
-    setExpenses(data ?? []);
+    const categoryIds = [
+      ...new Set(
+        (expenseData ?? [])
+          .map((expense) => expense.category_id)
+          .filter((id): id is string => Boolean(id)),
+      ),
+    ];
+
+    if (categoryIds.length > 0) {
+      const { data: categoryData, error: categoryError } = await supabase
+        .from("categories")
+        .select("id, name, icon")
+        .in("id", categoryIds);
+
+      if (categoryError) {
+        setLoading(false);
+        Alert.alert("Unable to load categories", categoryError.message);
+        return;
+      }
+
+      setCategories(categoryData ?? []);
+    } else {
+      setCategories([]);
+    }
+
+    setExpenses(expenseData ?? []);
     setLoading(false);
   }, []);
 
@@ -45,6 +77,20 @@ export default function StatisticsScreen() {
     (total, expense) => total + Number(expense.amount),
     0,
   );
+
+  const categoryTotals = categories.map((category) => {
+    const total = expenses
+      .filter((expense) => expense.category_id === category.id)
+      .reduce((sum, expense) => sum + Number(expense.amount), 0);
+
+    const percentage = totalSpent > 0 ? (total / totalSpent) * 100 : 0;
+
+    return {
+      ...category,
+      total,
+      percentage,
+    };
+  });
 
   return (
     <ScrollView className="flex-1 bg-gray-100">
@@ -79,12 +125,45 @@ export default function StatisticsScreen() {
 
             <View className="mt-6 rounded-2xl bg-white p-5">
               <Text className="text-lg font-bold text-gray-900">
-                Spending Overview
+                Spending by Category
               </Text>
 
-              <Text className="mt-3 text-gray-500">
-                Category statistics will appear here next.
-              </Text>
+              {categoryTotals.length === 0 ? (
+                <Text className="mt-4 text-gray-500">
+                  No category spending yet.
+                </Text>
+              ) : (
+                categoryTotals.map((category) => (
+                  <View key={category.id} className="mt-5">
+                    <View className="flex-row items-center justify-between">
+                      <View className="flex-1 flex-row items-center">
+                        <Text className="text-xl">{category.icon ?? "📁"}</Text>
+
+                        <Text className="ml-3 font-medium text-gray-900">
+                          {category.name}
+                        </Text>
+                      </View>
+
+                      <View className="items-end">
+                        <Text className="font-bold text-gray-900">
+                          ₱{category.total.toFixed(2)}
+                        </Text>
+
+                        <Text className="text-sm text-gray-500">
+                          {category.percentage.toFixed(1)}%
+                        </Text>
+                      </View>
+                    </View>
+
+                    <View className="mt-2 h-2 overflow-hidden rounded-full bg-gray-200">
+                      <View
+                        className="h-2 rounded-full bg-gray-900"
+                        style={{ width: `${category.percentage}%` }}
+                      />
+                    </View>
+                  </View>
+                ))
+              )}
             </View>
           </>
         )}

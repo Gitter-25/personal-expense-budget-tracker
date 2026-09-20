@@ -9,13 +9,22 @@ export default function SettingsScreen() {
 
   useEffect(() => {
     const loadUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      try {
+        const {
+          data: { user },
+          error,
+        } = await supabase.auth.getUser();
 
-      setEmail(user?.email ?? "");
+        if (error) {
+          console.error("Unable to load user:", error.message);
+          return;
+        }
+
+        setEmail(user?.email ?? "");
+      } catch (error) {
+        console.error("Unexpected error loading user:", error);
+      }
     };
-
     loadUser();
   }, []);
 

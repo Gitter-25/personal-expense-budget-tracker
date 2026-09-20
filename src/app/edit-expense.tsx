@@ -33,11 +33,23 @@ export default function EditExpenseScreen() {
     const loadExpense = async () => {
       if (!id) {
         Alert.alert("Error", "Expense ID is missing.");
-        router.back();
         return;
       }
 
-      setLoading(true);
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError || !user) {
+        Alert.alert(
+          "Session error",
+          "Your session could not be verified. Please log in again.",
+        );
+        return;
+      }
+
+      setSaving(true);
 
       const { data: expense, error: expenseError } = await supabase
         .from("expenses")

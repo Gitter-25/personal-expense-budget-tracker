@@ -10,6 +10,8 @@ export default function SignupScreen() {
   const [loading, setLoading] = useState(false);
 
   const handleSignup = async () => {
+    if (loading) return;
+
     if (!email.trim() || !password || !confirmPassword) {
       Alert.alert("Missing information", "Please complete all fields.");
       return;
@@ -25,45 +27,54 @@ export default function SignupScreen() {
       return;
     }
 
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    const { data, error } = await supabase.auth.signUp({
-      email: email.trim(),
-      password,
-    });
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+      });
 
-    setLoading(false);
+      if (error) {
+        Alert.alert("Signup failed", error.message);
+        return;
+      }
 
-    if (error) {
-      Alert.alert("Signup failed", error.message);
-      return;
-    }
+      if (!data.session) {
+        Alert.alert(
+          "Account created",
+          "Please check your email and confirm your account before logging in.",
+          [
+            {
+              text: "Go to Login",
+              onPress: () => router.replace("/login"),
+            },
+          ],
+        );
 
-    if (!data.session) {
+        return;
+      }
+
       Alert.alert(
         "Account created",
-        "Please check your email and confirm your account before logging in.",
+        "Your account has been created successfully.",
         [
           {
-            text: "Go to Login",
-            onPress: () => router.replace("/login"),
+            text: "Continue",
+            onPress: () => router.replace("/(tabs)"),
           },
         ],
       );
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "An unexpected error occurred.";
 
-      return;
+      Alert.alert("Signup failed", message);
+    } finally {
+      setLoading(false);
     }
-
-    Alert.alert(
-      "Account created",
-      "Your account has been created successfully.",
-      [
-        {
-          text: "Continue",
-          onPress: () => router.replace("/(tabs)"),
-        },
-      ],
-    );
   };
 
   return (

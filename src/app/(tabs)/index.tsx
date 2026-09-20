@@ -33,6 +33,19 @@ export default function HomeScreen() {
           text: "Delete",
           style: "destructive",
           onPress: async () => {
+            const {
+              data: { user },
+              error: userError,
+            } = await supabase.auth.getUser();
+
+            if (userError || !user) {
+              Alert.alert(
+                "Session error",
+                "Your session could not be verified. Please log in again.",
+              );
+              return;
+            }
+
             const { error } = await supabase
               .from("expenses")
               .delete()

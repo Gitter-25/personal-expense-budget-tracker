@@ -97,14 +97,23 @@ export default function HomeScreen() {
       setLoadingExpenses(true);
 
       const now = new Date();
+
       const currentMonth = `${now.getFullYear()}-${String(
         now.getMonth() + 1,
+      ).padStart(2, "0")}-01`;
+
+      const nextMonthDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+
+      const nextMonth = `${nextMonthDate.getFullYear()}-${String(
+        nextMonthDate.getMonth() + 1,
       ).padStart(2, "0")}-01`;
 
       const [expenseResult, budgetResult] = await Promise.all([
         supabase
           .from("expenses")
           .select("id, amount, description, expense_date, category_id")
+          .gte("expense_date", currentMonth)
+          .lt("expense_date", nextMonth)
           .order("expense_date", { ascending: false })
           .order("created_at", { ascending: false }),
 

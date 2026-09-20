@@ -33,34 +33,43 @@ export default function HomeScreen() {
           text: "Delete",
           style: "destructive",
           onPress: async () => {
-            const {
-              data: { user },
-              error: userError,
-            } = await supabase.auth.getUser();
+            try {
+              const {
+                data: { user },
+                error: userError,
+              } = await supabase.auth.getUser();
 
-            if (userError || !user) {
-              Alert.alert(
-                "Session error",
-                "Your session could not be verified. Please log in again.",
+              if (userError || !user) {
+                Alert.alert(
+                  "Session error",
+                  "Your session could not be verified. Please log in again.",
+                );
+                return;
+              }
+
+              const { error } = await supabase
+                .from("expenses")
+                .delete()
+                .eq("id", expenseId);
+
+              if (error) {
+                Alert.alert("Unable to delete expense", error.message);
+                return;
+              }
+
+              setExpenses((currentExpenses) =>
+                currentExpenses.filter((expense) => expense.id !== expenseId),
               );
-              return;
+
+              Alert.alert("Expense deleted", "The expense has been deleted.");
+            } catch (error) {
+              const message =
+                error instanceof Error
+                  ? error.message
+                  : "An unexpected error occurred.";
+
+              Alert.alert("Unable to delete expense", message);
             }
-
-            const { error } = await supabase
-              .from("expenses")
-              .delete()
-              .eq("id", expenseId);
-
-            if (error) {
-              Alert.alert("Unable to delete expense", error.message);
-              return;
-            }
-
-            setExpenses((currentExpenses) =>
-              currentExpenses.filter((expense) => expense.id !== expenseId),
-            );
-
-            Alert.alert("Expense deleted", "The expense has been deleted.");
           },
         },
       ],

@@ -54,6 +54,7 @@ export default function BudgetScreen() {
     if (saving) return;
 
     Keyboard.dismiss();
+
     const amount = Number(budget);
 
     if (!budget.trim() || Number.isNaN(amount) || amount < 0) {
@@ -61,48 +62,57 @@ export default function BudgetScreen() {
       return;
     }
 
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
+    try {
+      setSaving(true);
 
-    if (userError || !user) {
-      Alert.alert(
-        "Session error",
-        "Your session could not be verified. Please log in again.",
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError || !user) {
+        Alert.alert(
+          "Session error",
+          "Your session could not be verified. Please log in again.",
+        );
+        return;
+      }
+
+      const now = new Date();
+      const currentMonth = `${now.getFullYear()}-${String(
+        now.getMonth() + 1,
+      ).padStart(2, "0")}-01`;
+
+      const { error } = await supabase.from("budgets").upsert(
+        {
+          user_id: user.id,
+          month: currentMonth,
+          amount,
+        },
+        {
+          onConflict: "user_id,month",
+        },
       );
-      return;
+
+      if (error) {
+        Alert.alert("Unable to save budget", error.message);
+        return;
+      }
+
+      Alert.alert(
+        "Budget saved",
+        `Your monthly budget is now ₱${amount.toFixed(2)}.`,
+      );
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "An unexpected error occurred.";
+
+      Alert.alert("Unable to save budget", message);
+    } finally {
+      setSaving(false);
     }
-
-    const now = new Date();
-    const currentMonth = `${now.getFullYear()}-${String(
-      now.getMonth() + 1,
-    ).padStart(2, "0")}-01`;
-
-    setSaving(true);
-
-    const { error } = await supabase.from("budgets").upsert(
-      {
-        user_id: user.id,
-        month: currentMonth,
-        amount,
-      },
-      {
-        onConflict: "user_id,month",
-      },
-    );
-
-    setSaving(false);
-
-    if (error) {
-      Alert.alert("Unable to save budget", error.message);
-      return;
-    }
-
-    Alert.alert(
-      "Budget saved",
-      `Your monthly budget is now ₱${amount.toFixed(2)}.`,
-    );
   };
 
   return (

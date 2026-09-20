@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useFocusEffect } from "expo-router";
+import { useCallback, useState } from "react";
 import {
   Alert,
   Keyboard,
@@ -14,6 +15,40 @@ import { supabase } from "../../lib/supabase";
 export default function BudgetScreen() {
   const [budget, setBudget] = useState("10000");
   const [saving, setSaving] = useState(false);
+  const loadBudget = useCallback(async () => {
+    try {
+      const now = new Date();
+      const currentMonth = `${now.getFullYear()}-${String(
+        now.getMonth() + 1,
+      ).padStart(2, "0")}-01`;
+
+      const { data, error } = await supabase
+        .from("budgets")
+        .select("amount")
+        .eq("month", currentMonth)
+        .maybeSingle();
+
+      if (error) {
+        Alert.alert("Unable to load budget", error.message);
+        return;
+      }
+
+      setBudget(String(data?.amount ?? 0));
+    } catch (error) {
+      console.error("Unexpected error loading budget:", error);
+
+      Alert.alert(
+        "Unable to load budget",
+        "An unexpected error occurred while loading your budget.",
+      );
+    }
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadBudget();
+    }, [loadBudget]),
+  );
 
   const handleSave = async () => {
     if (saving) return;

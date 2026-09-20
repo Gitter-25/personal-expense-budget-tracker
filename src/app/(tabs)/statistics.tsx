@@ -23,77 +23,78 @@ export default function StatisticsScreen() {
   const [loading, setLoading] = useState(true);
 
   const loadStatistics = useCallback(async () => {
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    const now = new Date();
+      const now = new Date();
 
-    const firstDayOfMonth = `${now.getFullYear()}-${String(
-      now.getMonth() + 1,
-    ).padStart(2, "0")}-01`;
+      const firstDayOfMonth = `${now.getFullYear()}-${String(
+        now.getMonth() + 1,
+      ).padStart(2, "0")}-01`;
 
-    // Load this month's expenses
-    const { data: expenseData, error: expenseError } = await supabase
-      .from("expenses")
-      .select("id, amount, expense_date, category_id")
-      .gte("expense_date", firstDayOfMonth)
-      .order("expense_date", { ascending: false });
+      // Load this month's expenses
+      const { data: expenseData, error: expenseError } = await supabase
+        .from("expenses")
+        .select("id, amount, expense_date, category_id")
+        .gte("expense_date", firstDayOfMonth)
+        .order("expense_date", { ascending: false });
 
-    if (expenseError) {
-      setLoading(false);
-
-      Alert.alert("Unable to load statistics", expenseError.message);
-
-      return;
-    }
-
-    // Load this month's budget
-    const { data: budgetData, error: budgetError } = await supabase
-      .from("budgets")
-      .select("amount")
-      .eq("month", firstDayOfMonth)
-      .maybeSingle();
-
-    if (budgetError) {
-      setLoading(false);
-
-      Alert.alert("Unable to load budget", budgetError.message);
-
-      return;
-    }
-
-    setMonthlyBudget(Number(budgetData?.amount ?? 0));
-
-    // Get category IDs used by this month's expenses
-    const categoryIds = [
-      ...new Set(
-        (expenseData ?? [])
-          .map((expense) => expense.category_id)
-          .filter((id): id is string => Boolean(id)),
-      ),
-    ];
-
-    // Load category information
-    if (categoryIds.length > 0) {
-      const { data: categoryData, error: categoryError } = await supabase
-        .from("categories")
-        .select("id, name, icon")
-        .in("id", categoryIds);
-
-      if (categoryError) {
-        setLoading(false);
-
-        Alert.alert("Unable to load categories", categoryError.message);
-
+      if (expenseError) {
+        Alert.alert("Unable to load statistics", expenseError.message);
         return;
       }
 
-      setCategories(categoryData ?? []);
-    } else {
-      setCategories([]);
-    }
+      // Load this month's budget
+      const { data: budgetData, error: budgetError } = await supabase
+        .from("budgets")
+        .select("amount")
+        .eq("month", firstDayOfMonth)
+        .maybeSingle();
 
-    setExpenses(expenseData ?? []);
-    setLoading(false);
+      if (budgetError) {
+        Alert.alert("Unable to load budget", budgetError.message);
+        return;
+      }
+
+      setMonthlyBudget(Number(budgetData?.amount ?? 0));
+
+      // Get category IDs used by this month's expenses
+      const categoryIds = [
+        ...new Set(
+          (expenseData ?? [])
+            .map((expense) => expense.category_id)
+            .filter((id): id is string => Boolean(id)),
+        ),
+      ];
+
+      // Load category information
+      if (categoryIds.length > 0) {
+        const { data: categoryData, error: categoryError } = await supabase
+          .from("categories")
+          .select("id, name, icon")
+          .in("id", categoryIds);
+
+        if (categoryError) {
+          Alert.alert("Unable to load categories", categoryError.message);
+          return;
+        }
+
+        setCategories(categoryData ?? []);
+      } else {
+        setCategories([]);
+      }
+
+      setExpenses(expenseData ?? []);
+    } catch (error) {
+      console.error("Unexpected error loading statistics:", error);
+
+      Alert.alert(
+        "Unable to load statistics",
+        "An unexpected error occurred while loading your statistics.",
+      );
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useFocusEffect(

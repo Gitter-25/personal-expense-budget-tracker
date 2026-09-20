@@ -46,40 +46,54 @@ export default function ProfileScreen() {
   };
 
   const handleSave = async () => {
+    if (saving) return;
+
     if (!fullName.trim()) {
       Alert.alert("Missing information", "Please enter your full name.");
       return;
     }
 
-    setSaving(true);
+    try {
+      setSaving(true);
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
 
-    if (!user) {
+      if (userError || !user) {
+        Alert.alert(
+          "Session error",
+          "Your session could not be verified. Please log in again.",
+        );
+        router.replace("/login");
+        return;
+      }
+
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          full_name: fullName.trim(),
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", user.id);
+
+      if (error) {
+        Alert.alert("Save failed", error.message);
+        return;
+      }
+
+      Alert.alert("Profile saved", "Your profile has been updated.");
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "An unexpected error occurred.";
+
+      Alert.alert("Save failed", message);
+    } finally {
       setSaving(false);
-      Alert.alert("Error", "Your session has expired. Please log in again.");
-      router.replace("/login");
-      return;
     }
-
-    const { error } = await supabase
-      .from("profiles")
-      .update({
-        full_name: fullName.trim(),
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", user.id);
-
-    setSaving(false);
-
-    if (error) {
-      Alert.alert("Save failed", error.message);
-      return;
-    }
-
-    Alert.alert("Profile saved", "Your profile has been updated.");
   };
 
   if (loading) {

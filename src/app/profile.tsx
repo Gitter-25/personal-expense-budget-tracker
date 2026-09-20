@@ -14,35 +14,44 @@ export default function ProfileScreen() {
   }, []);
 
   const loadProfile = async () => {
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
 
-    if (userError || !user) {
-      Alert.alert("Error", "Unable to load your account.");
-      router.replace("/login");
-      return;
-    }
+      if (userError || !user) {
+        Alert.alert("Error", "Unable to load your account.");
+        router.replace("/login");
+        return;
+      }
 
-    setEmail(user.email ?? "");
+      setEmail(user.email ?? "");
 
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("full_name")
-      .eq("id", user.id)
-      .single();
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", user.id)
+        .single();
 
-    if (error) {
-      Alert.alert("Error", "Unable to load your profile.");
+      if (error) {
+        Alert.alert("Error", "Unable to load your profile.");
+        return;
+      }
+
+      setFullName(data.full_name ?? "");
+    } catch (error) {
+      console.error("Unexpected error loading profile:", error);
+
+      Alert.alert(
+        "Error",
+        "An unexpected error occurred while loading your profile.",
+      );
+    } finally {
       setLoading(false);
-      return;
     }
-
-    setFullName(data.full_name ?? "");
-    setLoading(false);
   };
 
   const handleSave = async () => {

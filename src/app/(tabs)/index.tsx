@@ -84,90 +84,102 @@ export default function HomeScreen() {
   const remainingBudget = monthlyBudget - monthlySpent;
 
   const loadExpenses = useCallback(async () => {
-    setLoadingExpenses(true);
+    try {
+      setLoadingExpenses(true);
 
-    const now = new Date();
-    const currentMonth = `${now.getFullYear()}-${String(
-      now.getMonth() + 1,
-    ).padStart(2, "0")}-01`;
+      const now = new Date();
+      const currentMonth = `${now.getFullYear()}-${String(
+        now.getMonth() + 1,
+      ).padStart(2, "0")}-01`;
 
-    const [expenseResult, budgetResult] = await Promise.all([
-      supabase
-        .from("expenses")
-        .select("id, amount, description, expense_date, category_id")
-        .order("expense_date", { ascending: false })
-        .order("created_at", { ascending: false }),
+      const [expenseResult, budgetResult] = await Promise.all([
+        supabase
+          .from("expenses")
+          .select("id, amount, description, expense_date, category_id")
+          .order("expense_date", { ascending: false })
+          .order("created_at", { ascending: false }),
 
-      supabase
-        .from("budgets")
-        .select("amount")
-        .eq("month", currentMonth)
-        .maybeSingle(),
-    ]);
+        supabase
+          .from("budgets")
+          .select("amount")
+          .eq("month", currentMonth)
+          .maybeSingle(),
+      ]);
 
-    const { data: expenseData, error: expenseError } = expenseResult;
-    const { data: budgetData, error: budgetError } = budgetResult;
+      const { data: expenseData, error: expenseError } = expenseResult;
+      const { data: budgetData, error: budgetError } = budgetResult;
 
-    if (expenseError) {
-      setLoadingExpenses(false);
-      Alert.alert("Unable to load expenses", expenseError.message);
-      return;
-    }
-
-    if (budgetError) {
-      setLoadingExpenses(false);
-      Alert.alert("Unable to load budget", budgetError.message);
-      return;
-    }
-
-    setMonthlyBudget(Number(budgetData?.amount ?? 0));
-
-    const categoryIds = [
-      ...new Set(
-        (expenseData ?? [])
-          .map((expense) => expense.category_id)
-          .filter((id): id is string => Boolean(id)),
-      ),
-    ];
-
-    let categoryMap = new Map<string, { name: string; icon: string | null }>();
-
-    if (categoryIds.length > 0) {
-      const { data: categoryData, error: categoryError } = await supabase
-        .from("categories")
-        .select("id, name, icon")
-        .in("id", categoryIds);
-
-      if (categoryError) {
-        setLoadingExpenses(false);
-        Alert.alert("Unable to load categories", categoryError.message);
+      if (expenseError) {
+        Alert.alert("Unable to load expenses", expenseError.message);
         return;
       }
 
-      categoryMap = new Map(
-        (categoryData ?? []).map((category) => [
-          category.id,
-          {
-            name: category.name,
-            icon: category.icon,
-          },
-        ]),
+      if (budgetError) {
+        Alert.alert("Unable to load budget", budgetError.message);
+        return;
+      }
+
+      setMonthlyBudget(Number(budgetData?.amount ?? 0));
+
+      const categoryIds = [
+        ...new Set(
+          (expenseData ?? [])
+            .map((expense) => expense.category_id)
+            .filter((id): id is string => Boolean(id)),
+        ),
+      ];
+
+      let categoryMap = new Map<
+        string,
+        { name: string; icon: string | null }
+      >();
+
+      if (categoryIds.length > 0) {
+        const { data: categoryData, error: categoryError } = await supabase
+          .from("categories")
+          .select("id, name, icon")
+          .in("id", categoryIds);
+
+        if (categoryError) {
+          Alert.alert("Unable to load categories", categoryError.message);
+          return;
+        }
+
+        categoryMap = new Map(
+          (categoryData ?? []).map((category) => [
+            category.id,
+            {
+              name: category.name,
+              icon: category.icon,
+            },
+          ]),
+        );
+      }
+
+      const formattedExpenses: Expense[] = (expenseData ?? []).map(
+        (expense) => ({
+          id: expense.id,
+          amount: expense.amount,
+          description: expense.description,
+          expense_date: expense.expense_date,
+          category_id: expense.category_id,
+          category: expense.category_id
+            ? (categoryMap.get(expense.category_id) ?? null)
+            : null,
+        }),
       );
+
+      setExpenses(formattedExpenses);
+    } catch (error) {
+      console.error("Unexpected error loading home data:", error);
+
+      Alert.alert(
+        "Unable to load data",
+        "An unexpected error occurred while loading your data.",
+      );
+    } finally {
+      setLoadingExpenses(false);
     }
-
-    const formattedExpenses: Expense[] = (expenseData ?? []).map((expense) => ({
-      id: expense.id,
-      amount: expense.amount,
-      description: expense.description,
-      expense_date: expense.expense_date,
-      category_id: expense.category_id,
-      category: expense.category_id
-        ? (categoryMap.get(expense.category_id) ?? null)
-        : null,
-    }));
-
-    setExpenses(formattedExpenses);
-    setLoadingExpenses(false);
   }, []);
   useFocusEffect(
     useCallback(() => {

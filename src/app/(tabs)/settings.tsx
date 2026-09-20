@@ -80,6 +80,15 @@ export default function SettingsScreen() {
         <Text className="mt-2 text-gray-500">{email}</Text>
 
         <TouchableOpacity
+          className="mt-5 rounded-xl bg-gray-100 px-4 py-4"
+          onPress={() => router.push("/profile")}
+        >
+          <Text className="text-center font-semibold text-gray-900">
+            My Profile
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
           className={`mt-5 rounded-xl px-4 py-4 ${
             loggingOut ? "bg-red-50" : "bg-red-100"
           }`}

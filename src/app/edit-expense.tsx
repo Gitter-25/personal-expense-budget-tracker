@@ -33,58 +33,73 @@ export default function EditExpenseScreen() {
     const loadExpense = async () => {
       if (!id) {
         Alert.alert("Error", "Expense ID is missing.");
-        return;
-      }
-
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
-
-      if (userError || !user) {
-        Alert.alert(
-          "Session error",
-          "Your session could not be verified. Please log in again.",
-        );
-        return;
-      }
-
-      setSaving(true);
-
-      const { data: expense, error: expenseError } = await supabase
-        .from("expenses")
-        .select("id, amount, description, category_id")
-        .eq("id", id)
-        .maybeSingle();
-
-      if (expenseError) {
-        Alert.alert("Unable to load expense", expenseError.message);
         setLoading(false);
         return;
       }
 
-      if (!expense) {
-        Alert.alert("Expense not found", "This expense no longer exists.");
-        router.back();
-        return;
-      }
+      try {
+        setLoading(true);
 
-      setAmount(String(expense.amount));
-      setDescription(expense.description ?? "");
-      setCategoryId(expense.category_id ?? "");
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser();
 
-      const { data: categoryData, error: categoryError } = await supabase
-        .from("categories")
-        .select("id, name, icon")
-        .order("created_at", { ascending: true });
+        if (userError || !user) {
+          Alert.alert(
+            "Session error",
+            "Your session could not be verified. Please log in again.",
+          );
+          router.replace("/login");
+          return;
+        }
 
-      if (categoryError) {
-        Alert.alert("Unable to load categories", categoryError.message);
-      } else {
+        const { data: expense, error: expenseError } = await supabase
+          .from("expenses")
+          .select("id, amount, description, category_id")
+          .eq("id", id)
+          .maybeSingle();
+
+        if (expenseError) {
+          Alert.alert("Unable to load expense", expenseError.message);
+          return;
+        }
+
+        if (!expense) {
+          Alert.alert("Expense not found", "This expense no longer exists.", [
+            {
+              text: "OK",
+              onPress: () => router.back(),
+            },
+          ]);
+          return;
+        }
+
+        setAmount(String(expense.amount));
+        setDescription(expense.description ?? "");
+        setCategoryId(expense.category_id ?? "");
+
+        const { data: categoryData, error: categoryError } = await supabase
+          .from("categories")
+          .select("id, name, icon")
+          .order("created_at", { ascending: true });
+
+        if (categoryError) {
+          Alert.alert("Unable to load categories", categoryError.message);
+          return;
+        }
+
         setCategories(categoryData ?? []);
-      }
+      } catch (error) {
+        console.error("Unexpected error loading expense:", error);
 
-      setLoading(false);
+        Alert.alert(
+          "Unable to load expense",
+          "An unexpected error occurred while loading the expense.",
+        );
+      } finally {
+        setLoading(false);
+      }
     };
 
     loadExpense();
@@ -95,7 +110,11 @@ export default function EditExpenseScreen() {
 
     const numericAmount = Number(amount);
 
-    if (!amount.trim() || Number.isNaN(numericAmount) || numericAmount <= 0) {
+    if (
+      !amount.trim() ||
+      !Number.isFinite(numericAmount) ||
+      numericAmount <= 0
+    ) {
       Alert.alert("Invalid amount", "Please enter an amount greater than 0.");
       return;
     }
@@ -110,34 +129,57 @@ export default function EditExpenseScreen() {
       return;
     }
 
-    setSaving(true);
+    try {
+      setSaving(true);
 
-    const { error } = await supabase
-      .from("expenses")
-      .update({
-        amount: numericAmount,
-        description: description.trim() || null,
-        category_id: categoryId,
-      })
-      .eq("id", id);
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
 
-    setSaving(false);
+      if (userError || !user) {
+        Alert.alert(
+          "Session error",
+          "Your session could not be verified. Please log in again.",
+        );
+        router.replace("/login");
+        return;
+      }
 
-    if (error) {
-      Alert.alert("Unable to update expense", error.message);
-      return;
+      const { error } = await supabase
+        .from("expenses")
+        .update({
+          amount: numericAmount,
+          description: description.trim() || null,
+          category_id: categoryId,
+        })
+        .eq("id", id);
+
+      if (error) {
+        Alert.alert("Unable to update expense", error.message);
+        return;
+      }
+
+      Alert.alert(
+        "Expense updated",
+        "Your expense has been updated successfully.",
+        [
+          {
+            text: "OK",
+            onPress: () => router.back(),
+          },
+        ],
+      );
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "An unexpected error occurred.";
+
+      Alert.alert("Unable to update expense", message);
+    } finally {
+      setSaving(false);
     }
-
-    Alert.alert(
-      "Expense updated",
-      "Your expense has been updated successfully.",
-      [
-        {
-          text: "OK",
-          onPress: () => router.back(),
-        },
-      ],
-    );
   };
 
   if (loading) {

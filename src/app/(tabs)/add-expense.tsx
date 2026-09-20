@@ -30,21 +30,30 @@ export default function AddExpenseScreen() {
   }, []);
 
   const loadCategories = async () => {
-    setLoadingCategories(true);
+    try {
+      setLoadingCategories(true);
 
-    const { data, error } = await supabase
-      .from("categories")
-      .select("id, name, icon")
-      .order("created_at", { ascending: true });
+      const { data, error } = await supabase
+        .from("categories")
+        .select("id, name, icon")
+        .order("created_at", { ascending: true });
 
-    setLoadingCategories(false);
+      if (error) {
+        Alert.alert("Unable to load categories", error.message);
+        return;
+      }
 
-    if (error) {
-      Alert.alert("Unable to load categories", error.message);
-      return;
+      setCategories(data ?? []);
+    } catch (error) {
+      console.error("Unexpected error loading categories:", error);
+
+      Alert.alert(
+        "Unable to load categories",
+        "An unexpected error occurred while loading your categories.",
+      );
+    } finally {
+      setLoadingCategories(false);
     }
-
-    setCategories(data ?? []);
   };
 
   const handleSaveExpense = async () => {
@@ -67,41 +76,50 @@ export default function AddExpenseScreen() {
       return;
     }
 
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
+    try {
+      setSaving(true);
 
-    if (userError || !user) {
-      Alert.alert(
-        "Session error",
-        "Your session could not be verified. Please log in again.",
-      );
-      return;
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError || !user) {
+        Alert.alert(
+          "Session error",
+          "Your session could not be verified. Please log in again.",
+        );
+        return;
+      }
+
+      const { error } = await supabase.from("expenses").insert({
+        user_id: user.id,
+        category_id: categoryId,
+        amount: numericAmount,
+        description: description.trim() || null,
+        expense_date: new Date().toISOString().split("T")[0],
+      });
+
+      if (error) {
+        Alert.alert("Unable to save expense", error.message);
+        return;
+      }
+
+      Alert.alert("Success", "Expense saved successfully.");
+
+      setAmount("");
+      setDescription("");
+      setCategoryId("");
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "An unexpected error occurred.";
+
+      Alert.alert("Unable to save expense", message);
+    } finally {
+      setSaving(false);
     }
-
-    setSaving(true);
-
-    const { error } = await supabase.from("expenses").insert({
-      user_id: user.id,
-      category_id: categoryId,
-      amount: numericAmount,
-      description: description.trim() || null,
-      expense_date: new Date().toISOString().split("T")[0],
-    });
-
-    setSaving(false);
-
-    if (error) {
-      Alert.alert("Unable to save expense", error.message);
-      return;
-    }
-
-    Alert.alert("Success", "Expense saved successfully.");
-
-    setAmount("");
-    setDescription("");
-    setCategoryId("");
   };
 
   return (

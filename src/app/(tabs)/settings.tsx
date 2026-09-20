@@ -5,6 +5,7 @@ import { supabase } from "../../lib/supabase";
 
 export default function SettingsScreen() {
   const [email, setEmail] = useState("");
+  const [loggingOut, setLoggingOut] = useState(false);
 
   useEffect(() => {
     const loadUser = async () => {
@@ -19,6 +20,8 @@ export default function SettingsScreen() {
   }, []);
 
   const handleLogout = () => {
+    if (loggingOut) return;
+
     Alert.alert("Log Out", "Are you sure you want to log out?", [
       {
         text: "Cancel",
@@ -28,14 +31,27 @@ export default function SettingsScreen() {
         text: "Log Out",
         style: "destructive",
         onPress: async () => {
-          const { error } = await supabase.auth.signOut();
+          try {
+            setLoggingOut(true);
 
-          if (error) {
-            Alert.alert("Unable to log out", error.message);
-            return;
+            const { error } = await supabase.auth.signOut();
+
+            if (error) {
+              Alert.alert("Unable to log out", error.message);
+              return;
+            }
+
+            router.replace("/login");
+          } catch (error) {
+            const message =
+              error instanceof Error
+                ? error.message
+                : "An unexpected error occurred.";
+
+            Alert.alert("Unable to log out", message);
+          } finally {
+            setLoggingOut(false);
           }
-
-          router.replace("/login");
         },
       },
     ]);
@@ -55,11 +71,14 @@ export default function SettingsScreen() {
         <Text className="mt-2 text-gray-500">{email}</Text>
 
         <TouchableOpacity
-          className="mt-5 rounded-xl bg-red-100 px-4 py-4"
+          className={`mt-5 rounded-xl px-4 py-4 ${
+            loggingOut ? "bg-red-50" : "bg-red-100"
+          }`}
           onPress={handleLogout}
+          disabled={loggingOut}
         >
           <Text className="text-center font-semibold text-red-600">
-            Log Out
+            {loggingOut ? "Logging out..." : "Log Out"}
           </Text>
         </TouchableOpacity>
       </View>

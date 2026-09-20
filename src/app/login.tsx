@@ -13,6 +13,8 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
+    if (loading) return;
+
     if (!email.trim() || !password) {
       Alert.alert(
         "Missing information",
@@ -21,21 +23,30 @@ export default function LoginScreen() {
       return;
     }
 
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
-      password,
-    });
+      const { error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
 
-    setLoading(false);
+      if (error) {
+        Alert.alert("Login failed", error.message);
+        return;
+      }
 
-    if (error) {
-      Alert.alert("Login failed", error.message);
-      return;
+      router.replace("/(tabs)");
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "An unexpected error occurred.";
+
+      Alert.alert("Login failed", message);
+    } finally {
+      setLoading(false);
     }
-
-    router.replace("/(tabs)");
   };
 
   const handleGoogleLogin = async () => {

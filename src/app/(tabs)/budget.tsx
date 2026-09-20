@@ -13,8 +13,11 @@ import { supabase } from "../../lib/supabase";
 
 export default function BudgetScreen() {
   const [budget, setBudget] = useState("10000");
+  const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
+    if (saving) return;
+
     Keyboard.dismiss();
     const amount = Number(budget);
 
@@ -25,10 +28,14 @@ export default function BudgetScreen() {
 
     const {
       data: { user },
+      error: userError,
     } = await supabase.auth.getUser();
 
-    if (!user) {
-      Alert.alert("Not logged in", "Please log in again.");
+    if (userError || !user) {
+      Alert.alert(
+        "Session error",
+        "Your session could not be verified. Please log in again.",
+      );
       return;
     }
 
@@ -36,6 +43,8 @@ export default function BudgetScreen() {
     const currentMonth = `${now.getFullYear()}-${String(
       now.getMonth() + 1,
     ).padStart(2, "0")}-01`;
+
+    setSaving(true);
 
     const { error } = await supabase.from("budgets").upsert(
       {
@@ -47,6 +56,8 @@ export default function BudgetScreen() {
         onConflict: "user_id,month",
       },
     );
+
+    setSaving(false);
 
     if (error) {
       Alert.alert("Unable to save budget", error.message);
@@ -90,10 +101,15 @@ export default function BudgetScreen() {
           </View>
 
           <TouchableOpacity
-            className="mt-5 items-center rounded-xl bg-blue-600 py-4"
+            className={`mt-5 items-center rounded-xl py-4 ${
+              saving ? "bg-blue-400" : "bg-blue-600"
+            }`}
             onPress={handleSave}
+            disabled={saving}
           >
-            <Text className="text-base font-bold text-white">Save Budget</Text>
+            <Text className="text-base font-bold text-white">
+              {saving ? "Saving..." : "Save Budget"}
+            </Text>
           </TouchableOpacity>
         </View>
       </View>

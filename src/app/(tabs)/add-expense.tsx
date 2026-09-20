@@ -69,10 +69,14 @@ export default function AddExpenseScreen() {
 
     const {
       data: { user },
+      error: userError,
     } = await supabase.auth.getUser();
 
-    if (!user) {
-      Alert.alert("Not logged in", "Please log in again.");
+    if (userError || !user) {
+      Alert.alert(
+        "Session error",
+        "Your session could not be verified. Please log in again.",
+      );
       return;
     }
 

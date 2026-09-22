@@ -73,7 +73,7 @@ export default function LoginScreen() {
       // Keep the existing scheme for now because Google OAuth
       // and Supabase redirect configuration currently use it.
       const redirectTo = AuthSession.makeRedirectUri({
-        scheme: "budgettracker",
+        scheme: "pesotrack",
         path: "auth/callback",
       });
 

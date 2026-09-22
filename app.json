@@ -10,7 +10,7 @@
 
     "ios": {
       "icon": "./assets/expo.icon",
-      "bundleIdentifier": "com.gtr25.BudgetTracker",
+      "bundleIdentifier": "com.gtr25.PesoTrack",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }

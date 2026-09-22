@@ -16,8 +16,19 @@ type Category = {
   icon: string | null;
 };
 
+const formatLocalDate = (date: Date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+};
+
 export default function StatisticsScreen() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [lastSevenDayExpenses, setLastSevenDayExpenses] = useState<Expense[]>(
+    [],
+  );
   const [categories, setCategories] = useState<Category[]>([]);
   const [monthlyBudget, setMonthlyBudget] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -28,46 +39,70 @@ export default function StatisticsScreen() {
 
       const now = new Date();
 
-      const firstDayOfMonth = `${now.getFullYear()}-${String(
-        now.getMonth() + 1,
-      ).padStart(2, "0")}-01`;
+      const firstDayOfMonth = formatLocalDate(
+        new Date(now.getFullYear(), now.getMonth(), 1),
+      );
 
-      // Load this month's expenses
-      const { data: expenseData, error: expenseError } = await supabase
-        .from("expenses")
-        .select("id, amount, expense_date, category_id")
-        .gte("expense_date", firstDayOfMonth)
-        .order("expense_date", { ascending: false });
+      const firstDayOfNextMonth = formatLocalDate(
+        new Date(now.getFullYear(), now.getMonth() + 1, 1),
+      );
+
+      const sevenDaysAgoDate = new Date(now);
+      sevenDaysAgoDate.setDate(now.getDate() - 6);
+
+      const sevenDaysAgo = formatLocalDate(sevenDaysAgoDate);
+
+      const queryStart =
+        sevenDaysAgo < firstDayOfMonth ? sevenDaysAgo : firstDayOfMonth;
+
+      const [expenseResult, budgetResult] = await Promise.all([
+        supabase
+          .from("expenses")
+          .select("id, amount, expense_date, category_id")
+          .gte("expense_date", queryStart)
+          .lt("expense_date", firstDayOfNextMonth)
+          .order("expense_date", { ascending: false }),
+
+        supabase
+          .from("budgets")
+          .select("amount")
+          .eq("month", firstDayOfMonth)
+          .maybeSingle(),
+      ]);
+
+      const { data: expenseData, error: expenseError } = expenseResult;
+      const { data: budgetData, error: budgetError } = budgetResult;
 
       if (expenseError) {
         Alert.alert("Unable to load statistics", expenseError.message);
         return;
       }
 
-      // Load this month's budget
-      const { data: budgetData, error: budgetError } = await supabase
-        .from("budgets")
-        .select("amount")
-        .eq("month", firstDayOfMonth)
-        .maybeSingle();
-
       if (budgetError) {
         Alert.alert("Unable to load budget", budgetError.message);
         return;
       }
 
+      const allLoadedExpenses = expenseData ?? [];
+
+      const monthlyExpenses = allLoadedExpenses.filter(
+        (expense) =>
+          expense.expense_date >= firstDayOfMonth &&
+          expense.expense_date < firstDayOfNextMonth,
+      );
+
+      setExpenses(monthlyExpenses);
+      setLastSevenDayExpenses(allLoadedExpenses);
       setMonthlyBudget(Number(budgetData?.amount ?? 0));
 
-      // Get category IDs used by this month's expenses
       const categoryIds = [
         ...new Set(
-          (expenseData ?? [])
+          monthlyExpenses
             .map((expense) => expense.category_id)
             .filter((id): id is string => Boolean(id)),
         ),
       ];
 
-      // Load category information
       if (categoryIds.length > 0) {
         const { data: categoryData, error: categoryError } = await supabase
           .from("categories")
@@ -83,8 +118,6 @@ export default function StatisticsScreen() {
       } else {
         setCategories([]);
       }
-
-      setExpenses(expenseData ?? []);
     } catch (error) {
       console.error("Unexpected error loading statistics:", error);
 
@@ -103,21 +136,20 @@ export default function StatisticsScreen() {
     }, [loadStatistics]),
   );
 
-  // Total spending
+  // Total spending for the current month
   const totalSpent = expenses.reduce(
     (total, expense) => total + Number(expense.amount),
     0,
   );
 
-  // Remaining budget
+  // Remaining monthly budget
   const remainingBudget = monthlyBudget - totalSpent;
 
-  // Percentage of budget used
+  // Percentage of monthly budget used
   const budgetPercentage =
     monthlyBudget > 0 ? Math.min((totalSpent / monthlyBudget) * 100, 100) : 0;
 
-  // Spending by category
-  // Spending by category
+  // Spending by category for the current month
   const categoryTotals = categories.map((category) => {
     const total = expenses
       .filter((expense) => expense.category_id === category.id)
@@ -132,17 +164,15 @@ export default function StatisticsScreen() {
     };
   });
 
-  // Last 7 days spending
+  // Spending during the last 7 calendar days
   const lastSevenDays = Array.from({ length: 7 }, (_, index) => {
     const date = new Date();
 
     date.setDate(date.getDate() - (6 - index));
 
-    const dateString = `${date.getFullYear()}-${String(
-      date.getMonth() + 1,
-    ).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+    const dateString = formatLocalDate(date);
 
-    const total = expenses
+    const total = lastSevenDayExpenses
       .filter((expense) => expense.expense_date === dateString)
       .reduce((sum, expense) => sum + Number(expense.amount), 0);
 
@@ -289,7 +319,6 @@ export default function StatisticsScreen() {
                 categoryTotals.map((category) => (
                   <View key={category.id} className="mt-5">
                     <View className="flex-row items-center justify-between">
-                      {/* Category Name */}
                       <View className="flex-1 flex-row items-center">
                         <Text className="text-xl">{category.icon ?? "📁"}</Text>
 
@@ -298,7 +327,6 @@ export default function StatisticsScreen() {
                         </Text>
                       </View>
 
-                      {/* Amount and Percentage */}
                       <View className="items-end">
                         <Text className="font-bold text-gray-900">
                           ₱{category.total.toFixed(2)}
@@ -310,7 +338,6 @@ export default function StatisticsScreen() {
                       </View>
                     </View>
 
-                    {/* Category Progress Bar */}
                     <View className="mt-2 h-2 overflow-hidden rounded-full bg-gray-200">
                       <View
                         className="h-2 rounded-full bg-gray-900"

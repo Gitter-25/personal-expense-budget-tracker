@@ -1,6 +1,15 @@
+import { Ionicons } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
-import { useCallback, useState } from "react";
-import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { useCallback, useMemo, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { supabase } from "../../lib/supabase";
 
 type Expense = {
@@ -13,6 +22,13 @@ type Expense = {
     name: string;
     icon: string | null;
   } | null;
+};
+
+const formatCurrency = (value: number) => {
+  return `₱${value.toLocaleString("en-PH", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
 };
 
 export default function HomeScreen() {
@@ -85,12 +101,19 @@ export default function HomeScreen() {
     });
   };
 
-  const monthlySpent = expenses.reduce(
-    (total, expense) => total + Number(expense.amount),
-    0,
-  );
+  const monthlySpent = useMemo(() => {
+    return expenses.reduce(
+      (total, expense) => total + Number(expense.amount),
+      0,
+    );
+  }, [expenses]);
 
   const remainingBudget = monthlyBudget - monthlySpent;
+
+  const budgetProgress =
+    monthlyBudget > 0 ? Math.min(monthlySpent / monthlyBudget, 1) : 0;
+
+  const recentExpenses = expenses.slice(0, 5);
 
   const loadExpenses = useCallback(async () => {
     try {
@@ -114,8 +137,12 @@ export default function HomeScreen() {
           .select("id, amount, description, expense_date, category_id")
           .gte("expense_date", currentMonth)
           .lt("expense_date", nextMonth)
-          .order("expense_date", { ascending: false })
-          .order("created_at", { ascending: false }),
+          .order("expense_date", {
+            ascending: false,
+          })
+          .order("created_at", {
+            ascending: false,
+          }),
 
         supabase
           .from("budgets")
@@ -125,6 +152,7 @@ export default function HomeScreen() {
       ]);
 
       const { data: expenseData, error: expenseError } = expenseResult;
+
       const { data: budgetData, error: budgetError } = budgetResult;
 
       if (expenseError) {
@@ -149,7 +177,10 @@ export default function HomeScreen() {
 
       let categoryMap = new Map<
         string,
-        { name: string; icon: string | null }
+        {
+          name: string;
+          icon: string | null;
+        }
       >();
 
       if (categoryIds.length > 0) {
@@ -199,6 +230,7 @@ export default function HomeScreen() {
       setLoadingExpenses(false);
     }
   }, []);
+
   useFocusEffect(
     useCallback(() => {
       loadExpenses();
@@ -206,112 +238,303 @@ export default function HomeScreen() {
   );
 
   return (
-    <ScrollView className="flex-1 bg-gray-100">
-      <View className="px-5 pb-8 pt-16">
-        <Text className="text-3xl font-bold text-gray-900">Budget Tracker</Text>
+    <SafeAreaView
+      style={{
+        flex: 1,
+        backgroundColor: "#F4F9FF",
+      }}
+      edges={["top", "left", "right"]}
+    >
+      <View
+        pointerEvents="none"
+        className="absolute -left-28 -top-24 h-72 w-72 rounded-full bg-[#D8EAFE]"
+      />
 
-        <Text className="mt-2 text-base text-gray-500">
-          Manage your personal expenses
-        </Text>
+      <View
+        pointerEvents="none"
+        className="absolute -right-40 top-44 h-80 w-80 rounded-full bg-[#E6F1FF]"
+      />
 
-        <View className="mt-6 rounded-2xl bg-gray-900 p-6">
-          <Text className="text-sm text-gray-300">Monthly Budget</Text>
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{
+          paddingHorizontal: 20,
+          paddingTop: 20,
+          paddingBottom: 40,
+        }}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Top bar */}
+        <View className="mb-6 flex-row items-center justify-between">
+          <View className="flex-row items-center">
+            <View className="mr-3 h-12 w-12 items-center justify-center rounded-2xl bg-[#1677F2]">
+              <Ionicons name="home" size={25} color="#FFFFFF" />
+            </View>
 
-          <Text className="mt-1 text-xl font-bold text-white">
-            ₱{monthlyBudget.toFixed(2)}
-          </Text>
+            <Text className="text-2xl font-extrabold text-[#071B46]">Home</Text>
+          </View>
 
-          <View className="my-5 h-px bg-gray-700" />
+          <TouchableOpacity
+            className="h-12 w-12 items-center justify-center rounded-full bg-white"
+            onPress={() => router.push("/(tabs)/settings")}
+            activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel="Open settings"
+          >
+            <Ionicons name="settings" size={26} color="#1677F2" />
+          </TouchableOpacity>
+        </View>
 
-          <View className="flex-row justify-between">
-            <View>
-              <Text className="text-sm text-gray-400">Total Spent</Text>
-              <Text className="mt-1 text-xl font-bold text-white">
-                ₱{monthlySpent.toFixed(2)}
+        {/* Brand */}
+        <View className="mb-6 flex-row items-center">
+          <View className="mr-4 h-[70px] w-[70px] items-center justify-center rounded-[22px] bg-[#1677F2]">
+            <Ionicons name="wallet" size={38} color="#FFFFFF" />
+          </View>
+
+          <View className="flex-1">
+            <View className="flex-row flex-wrap items-baseline">
+              <Text className="text-[34px] font-extrabold tracking-tight text-[#071B46]">
+                Peso
+              </Text>
+
+              <Text className="text-[34px] font-extrabold tracking-tight text-[#1677F2]">
+                Track
               </Text>
             </View>
 
-            <View>
-              <Text className="text-sm text-gray-400">Remaining</Text>
-              <Text className="mt-1 text-xl font-bold text-white">
-                ₱{remainingBudget.toFixed(2)}
+            <Text className="mt-1 text-[15px] text-[#65758B]">
+              Manage your personal expenses
+            </Text>
+          </View>
+        </View>
+
+        {/* Budget summary */}
+        <View className="overflow-hidden rounded-[28px] bg-[#1E63E9] px-5 py-6">
+          <View
+            pointerEvents="none"
+            className="absolute -right-20 -top-20 h-52 w-52 rounded-full bg-[#6955F5]"
+          />
+
+          <View
+            pointerEvents="none"
+            className="absolute -bottom-28 left-10 h-56 w-56 rounded-full bg-[#0D83ED]"
+          />
+
+          <View className="flex-row items-center">
+            <View className="mr-4 h-14 w-14 items-center justify-center rounded-2xl bg-white/15">
+              <Ionicons name="wallet-outline" size={29} color="#FFFFFF" />
+            </View>
+
+            <View className="flex-1">
+              <Text className="text-[15px] font-medium text-white/80">
+                Monthly Budget
               </Text>
+
+              <Text className="mt-1 text-[32px] font-extrabold text-white">
+                {formatCurrency(monthlyBudget)}
+              </Text>
+            </View>
+          </View>
+
+          {/* Progress */}
+          <View className="mt-6 h-3 overflow-hidden rounded-full bg-white/25">
+            <View
+              style={{
+                width: `${budgetProgress * 100}%`,
+              }}
+              className="h-full rounded-full bg-[#40D8EA]"
+            />
+          </View>
+
+          <View className="mt-6 flex-row">
+            <View className="flex-1 flex-row items-center">
+              <View className="mr-3 h-11 w-11 items-center justify-center rounded-full bg-white/15">
+                <Ionicons name="card-outline" size={23} color="#FFFFFF" />
+              </View>
+
+              <View>
+                <Text className="text-xs text-white/70">Total Spent</Text>
+
+                <Text className="mt-1 text-lg font-extrabold text-white">
+                  {formatCurrency(monthlySpent)}
+                </Text>
+              </View>
+            </View>
+
+            <View className="mx-3 w-px bg-white/25" />
+
+            <View className="flex-1 flex-row items-center">
+              <View className="mr-3 h-11 w-11 items-center justify-center rounded-full bg-white/15">
+                <Ionicons name="time-outline" size={23} color="#FFFFFF" />
+              </View>
+
+              <View className="flex-1">
+                <Text className="text-xs text-white/70">Remaining</Text>
+
+                <Text
+                  numberOfLines={1}
+                  adjustsFontSizeToFit
+                  className="mt-1 text-lg font-extrabold text-white"
+                >
+                  {formatCurrency(remainingBudget)}
+                </Text>
+              </View>
             </View>
           </View>
         </View>
 
-        <Text className="mb-3 mt-7 text-xl font-bold text-gray-900">
-          Recent Expenses
-        </Text>
+        {/* Recent expenses header */}
+        <View className="mb-4 mt-7 flex-row items-center justify-between">
+          <Text className="text-[24px] font-extrabold text-[#071B46]">
+            Recent Expenses
+          </Text>
 
+          {expenses.length > 5 && (
+            <TouchableOpacity
+              className="flex-row items-center"
+              onPress={() => router.push("/(tabs)/statistics")}
+              activeOpacity={0.7}
+            >
+              <Text className="mr-1 text-sm font-bold text-[#1677F2]">
+                View All
+              </Text>
+
+              <Ionicons name="chevron-forward" size={17} color="#1677F2" />
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {/* Loading */}
         {loadingExpenses ? (
-          <View className="rounded-2xl bg-white p-5">
-            <Text className="text-center text-gray-500">
+          <View className="items-center rounded-[24px] border border-[#E3EDF8] bg-white px-5 py-10">
+            <ActivityIndicator size="small" color="#1677F2" />
+
+            <Text className="mt-3 text-sm text-[#718096]">
               Loading expenses...
             </Text>
           </View>
-        ) : expenses.length === 0 ? (
-          <View className="rounded-2xl bg-white p-5">
-            <Text className="text-center text-gray-500">No expenses yet.</Text>
+        ) : recentExpenses.length === 0 ? (
+          /* Empty state */
+          <View className="items-center rounded-[24px] border border-[#E3EDF8] bg-white px-6 py-10">
+            <View className="h-16 w-16 items-center justify-center rounded-full bg-[#EAF3FF]">
+              <Ionicons name="receipt-outline" size={30} color="#1677F2" />
+            </View>
 
-            <Text className="mt-1 text-center text-sm text-gray-400">
-              Add your first expense to see it here.
+            <Text className="mt-4 text-lg font-extrabold text-[#071B46]">
+              No expenses yet
             </Text>
+
+            <Text className="mt-2 text-center text-sm leading-5 text-[#7A879A]">
+              Add your first expense and it will appear here.
+            </Text>
+
+            <TouchableOpacity
+              className="mt-5 flex-row items-center rounded-2xl bg-[#1677F2] px-5 py-3"
+              onPress={() => router.push("/(tabs)/add-expense")}
+              activeOpacity={0.85}
+            >
+              <Ionicons name="add" size={19} color="#FFFFFF" />
+
+              <Text className="ml-2 font-bold text-white">Add Expense</Text>
+            </TouchableOpacity>
           </View>
         ) : (
           <View>
-            {expenses.map((expense) => (
-              <View key={expense.id} className="mb-3 rounded-2xl bg-white p-4">
-                <View className="flex-row items-center justify-between">
-                  <View className="flex-1 flex-row items-center">
-                    <Text className="mr-3 text-2xl">
-                      {expense.category?.icon ?? "💰"}
-                    </Text>
+            {recentExpenses.map((expense, index) => (
+              <View
+                key={expense.id}
+                className="mb-4 overflow-hidden rounded-[24px] border border-[#E3EDF8] bg-white"
+              >
+                <View
+                  className={`absolute bottom-0 left-0 top-0 w-1.5 ${
+                    index % 2 === 0 ? "bg-[#FFC85A]" : "bg-[#8566F6]"
+                  }`}
+                />
 
-                    <View className="flex-1">
-                      <Text className="text-base font-bold text-gray-900">
-                        {expense.category?.name ?? "Uncategorized"}
-                      </Text>
+                <View className="p-5">
+                  <View className="flex-row items-start justify-between">
+                    <View className="mr-3 flex-1 flex-row">
+                      <View className="mr-3 h-14 w-14 items-center justify-center rounded-full bg-[#FFF6D9]">
+                        <Text className="text-2xl">
+                          {expense.category?.icon ?? "💰"}
+                        </Text>
+                      </View>
 
-                      <Text className="mt-1 text-sm text-gray-500">
-                        {expense.description || "No description"}
+                      <View className="flex-1">
+                        <Text className="text-[17px] font-extrabold text-[#071B46]">
+                          {expense.category?.name ?? "Uncategorized"}
+                        </Text>
+
+                        <Text
+                          numberOfLines={1}
+                          className="mt-1 text-sm text-[#6F7E92]"
+                        >
+                          {expense.description || "No description"}
+                        </Text>
+
+                        <View className="mt-2 flex-row items-center">
+                          <Ionicons
+                            name="calendar-outline"
+                            size={15}
+                            color="#1677F2"
+                          />
+
+                          <Text className="ml-1.5 text-xs text-[#75859A]">
+                            {expense.expense_date}
+                          </Text>
+                        </View>
+                      </View>
+                    </View>
+
+                    <View className="rounded-full bg-[#FCE8F0] px-3 py-2">
+                      <Text
+                        numberOfLines={1}
+                        className="font-extrabold text-[#9B174C]"
+                      >
+                        {formatCurrency(Number(expense.amount))}
                       </Text>
                     </View>
                   </View>
 
-                  <Text className="ml-3 text-base font-bold text-gray-900">
-                    ₱{Number(expense.amount).toFixed(2)}
-                  </Text>
-                </View>
+                  <View className="mt-4 flex-row">
+                    <TouchableOpacity
+                      className="mr-3 flex-row items-center rounded-xl bg-[#EAF4FF] px-4 py-2.5"
+                      onPress={() => handleEditExpense(expense)}
+                      activeOpacity={0.8}
+                    >
+                      <Ionicons
+                        name="create-outline"
+                        size={18}
+                        color="#1677F2"
+                      />
 
-                <Text className="mt-3 text-xs text-gray-400">
-                  {expense.expense_date}
-                </Text>
+                      <Text className="ml-2 text-sm font-bold text-[#1677F2]">
+                        Edit
+                      </Text>
+                    </TouchableOpacity>
 
-                <View className="mt-3 flex-row">
-                  <TouchableOpacity
-                    className="mr-2 rounded-lg bg-gray-100 px-3 py-2"
-                    onPress={() => handleEditExpense(expense)}
-                  >
-                    <Text className="text-sm font-medium text-gray-700">
-                      Edit
-                    </Text>
-                  </TouchableOpacity>
+                    <TouchableOpacity
+                      className="flex-row items-center rounded-xl bg-[#FDE9F0] px-4 py-2.5"
+                      onPress={() => handleDeleteExpense(expense.id)}
+                      activeOpacity={0.8}
+                    >
+                      <Ionicons
+                        name="trash-outline"
+                        size={18}
+                        color="#E91E63"
+                      />
 
-                  <TouchableOpacity
-                    className="rounded-lg bg-red-100 px-3 py-2"
-                    onPress={() => handleDeleteExpense(expense.id)}
-                  >
-                    <Text className="text-sm font-medium text-red-600">
-                      Delete
-                    </Text>
-                  </TouchableOpacity>
+                      <Text className="ml-2 text-sm font-bold text-[#E91E63]">
+                        Delete
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
               </View>
             ))}
           </View>
         )}
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }

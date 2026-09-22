@@ -1,8 +1,10 @@
+import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -11,6 +13,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { supabase } from "../lib/supabase";
 
 type Category = {
@@ -108,6 +111,8 @@ export default function EditExpenseScreen() {
   const handleSave = async () => {
     if (saving) return;
 
+    Keyboard.dismiss();
+
     const numericAmount = Number(amount);
 
     if (
@@ -184,84 +189,200 @@ export default function EditExpenseScreen() {
 
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center bg-gray-100">
-        <ActivityIndicator />
+      <SafeAreaView
+        style={{
+          flex: 1,
+          backgroundColor: "#F4F9FF",
+        }}
+        edges={["top", "left", "right", "bottom"]}
+      >
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator size="small" color="#1677F2" />
 
-        <Text className="mt-3 text-gray-500">Loading expense...</Text>
-      </View>
+          <Text className="mt-3 text-sm text-[#718096]">
+            Loading expense...
+          </Text>
+        </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <KeyboardAvoidingView
-      className="flex-1 bg-gray-100"
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    <SafeAreaView
+      style={{
+        flex: 1,
+        backgroundColor: "#F4F9FF",
+      }}
+      edges={["top", "left", "right", "bottom"]}
     >
-      <ScrollView className="flex-1" keyboardShouldPersistTaps="handled">
-        <View className="px-5 pb-10 pt-16">
-          <Text className="text-3xl font-bold text-gray-900">Edit Expense</Text>
+      <View
+        pointerEvents="none"
+        className="absolute -left-28 -top-24 h-72 w-72 rounded-full bg-[#D8EAFE]"
+      />
 
-          <Text className="mt-2 text-base text-gray-500">
-            Update your expense details.
-          </Text>
+      <View
+        pointerEvents="none"
+        className="absolute -right-40 top-44 h-80 w-80 rounded-full bg-[#E4F0FF]"
+      />
 
-          {/* Amount */}
-          <View className="mt-8">
-            <Text className="mb-2 text-sm font-medium text-gray-700">
-              Amount
-            </Text>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={{
+            paddingHorizontal: 20,
+            paddingTop: 20,
+            paddingBottom: 32,
+          }}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Header */}
+          <View className="mb-6 flex-row items-center">
+            <TouchableOpacity
+              className="mr-3 h-12 w-12 items-center justify-center rounded-2xl bg-white"
+              onPress={() => router.back()}
+              activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel="Go back"
+            >
+              <Ionicons name="arrow-back" size={24} color="#1677F2" />
+            </TouchableOpacity>
 
-            <TextInput
-              value={amount}
-              onChangeText={setAmount}
-              placeholder="0.00"
-              keyboardType="decimal-pad"
-              className="rounded-2xl bg-white px-4 py-4 text-base text-gray-900"
-            />
+            <View className="flex-1">
+              <Text className="text-[25px] font-extrabold text-[#071B46]">
+                Edit Expense
+              </Text>
+
+              <Text className="mt-0.5 text-sm text-[#66758D]">
+                Update your expense details
+              </Text>
+            </View>
           </View>
 
-          {/* Description */}
-          <View className="mt-5">
-            <Text className="mb-2 text-sm font-medium text-gray-700">
-              Description
-            </Text>
+          {/* Amount */}
+          <View className="rounded-[22px] border border-[#E3EDF8] bg-white p-4">
+            <View className="mb-3 flex-row items-center">
+              <View className="mr-3 h-9 w-9 items-center justify-center rounded-full bg-[#EAF3FF]">
+                <Text className="text-[21px] font-extrabold text-[#17335F]">
+                  ₱
+                </Text>
+              </View>
 
-            <TextInput
-              value={description}
-              onChangeText={setDescription}
-              placeholder="What did you spend on?"
-              className="rounded-2xl bg-white px-4 py-4 text-base text-gray-900"
-            />
+              <Text className="text-[18px] font-extrabold text-[#071B46]">
+                Expense Amount
+              </Text>
+            </View>
+
+            <View className="flex-row items-center rounded-2xl border border-[#D7E5F4] bg-[#F8FBFF] px-4">
+              <Text className="mr-3 text-[24px] font-bold text-[#586A84]">
+                ₱
+              </Text>
+
+              <View className="mr-3 h-7 w-px bg-[#DCE8F5]" />
+
+              <TextInput
+                style={{
+                  flex: 1,
+                  minHeight: 54,
+                  color: "#071B46",
+                  fontSize: 22,
+                  fontWeight: "700",
+                }}
+                value={amount}
+                onChangeText={setAmount}
+                placeholder="0.00"
+                placeholderTextColor="#A0AEC0"
+                keyboardType="decimal-pad"
+                editable={!saving}
+              />
+            </View>
           </View>
 
           {/* Category */}
           <View className="mt-5">
-            <Text className="mb-2 text-sm font-medium text-gray-700">
-              Category
-            </Text>
+            <View className="mb-3 flex-row items-center">
+              <View className="mr-3 h-10 w-10 items-center justify-center rounded-full bg-[#EEF5FF]">
+                <Ionicons name="grid-outline" size={20} color="#1677F2" />
+              </View>
 
-            <View className="rounded-2xl bg-white p-3">
-              {categories.map((category) => (
-                <TouchableOpacity
-                  key={category.id}
-                  onPress={() => setCategoryId(category.id)}
-                  className={`mb-2 flex-row items-center rounded-xl p-3 ${
-                    categoryId === category.id ? "bg-gray-900" : "bg-gray-100"
-                  }`}
-                >
-                  <Text className="text-xl">{category.icon ?? "📁"}</Text>
+              <Text className="text-[20px] font-extrabold text-[#071B46]">
+                Category
+              </Text>
+            </View>
 
-                  <Text
-                    className={`ml-3 font-medium ${
-                      categoryId === category.id
-                        ? "text-white"
-                        : "text-gray-900"
+            <View className="flex-row flex-wrap justify-between">
+              {categories.map((category) => {
+                const selected = categoryId === category.id;
+
+                return (
+                  <TouchableOpacity
+                    key={category.id}
+                    className={`mb-2 w-[48%] rounded-[18px] border px-3 py-2.5 ${
+                      selected
+                        ? "border-[#1677F2] bg-[#1677F2]"
+                        : "border-[#E3EDF8] bg-white"
                     }`}
+                    onPress={() => setCategoryId(category.id)}
+                    disabled={saving}
+                    activeOpacity={0.85}
                   >
-                    {category.name}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+                    <View
+                      className={`h-10 w-10 items-center justify-center rounded-full ${
+                        selected ? "bg-white/15" : "bg-[#F5F9FF]"
+                      }`}
+                    >
+                      <Text className="text-xl">{category.icon ?? "📁"}</Text>
+                    </View>
+
+                    <Text
+                      className={`mt-1.5 text-sm font-extrabold ${
+                        selected ? "text-white" : "text-[#071B46]"
+                      }`}
+                    >
+                      {category.name}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+
+          {/* Description */}
+          <View className="mt-4">
+            <View className="mb-3 flex-row items-center">
+              <View className="mr-3 h-10 w-10 items-center justify-center rounded-full bg-[#EEF5FF]">
+                <Ionicons name="create-outline" size={20} color="#1677F2" />
+              </View>
+
+              <Text className="text-[20px] font-extrabold text-[#071B46]">
+                Description
+              </Text>
+            </View>
+
+            <View className="rounded-[22px] border border-[#E3EDF8] bg-white p-4">
+              <TextInput
+                style={{
+                  minHeight: 72,
+                  color: "#071B46",
+                  fontSize: 16,
+                  lineHeight: 23,
+                }}
+                value={description}
+                onChangeText={setDescription}
+                placeholder="What did you spend on?"
+                placeholderTextColor="#A0AEC0"
+                multiline
+                textAlignVertical="top"
+                editable={!saving}
+                maxLength={150}
+              />
+
+              <Text className="mt-2 text-right text-xs text-[#94A3B8]">
+                {description.length}/150
+              </Text>
             </View>
           </View>
 
@@ -269,16 +390,33 @@ export default function EditExpenseScreen() {
           <TouchableOpacity
             disabled={saving}
             onPress={handleSave}
-            className={`mt-7 rounded-2xl p-4 ${
-              saving ? "bg-gray-400" : "bg-gray-900"
+            className={`mt-5 min-h-[56px] flex-row items-center justify-center rounded-2xl ${
+              saving ? "bg-[#7CB3F8]" : "bg-[#1677F2]"
             }`}
+            activeOpacity={0.85}
           >
-            <Text className="text-center text-base font-bold text-white">
-              {saving ? "Saving..." : "Save Changes"}
-            </Text>
+            {saving ? (
+              <>
+                <ActivityIndicator size="small" color="#FFFFFF" />
+
+                <Text className="ml-3 text-base font-extrabold text-white">
+                  Saving...
+                </Text>
+              </>
+            ) : (
+              <>
+                <Ionicons name="save-outline" size={21} color="#FFFFFF" />
+
+                <Text className="mx-3 text-base font-extrabold text-white">
+                  Save Changes
+                </Text>
+
+                <Ionicons name="arrow-forward" size={21} color="#FFFFFF" />
+              </>
+            )}
           </TouchableOpacity>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }

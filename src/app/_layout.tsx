@@ -94,7 +94,7 @@ export default function RootLayout() {
       <Stack.Screen
         name="edit-expense"
         options={{
-          title: "Edit Expense",
+          headerShown: false,
         }}
       />
 

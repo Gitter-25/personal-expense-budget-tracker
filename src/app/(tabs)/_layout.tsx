@@ -11,9 +11,13 @@ export default function TabsLayout() {
         tabBarInactiveTintColor: "#7A8AA3",
 
         tabBarLabelStyle: {
-          fontSize: 12,
+          fontSize: 11,
           fontWeight: "600",
           marginTop: 2,
+        },
+
+        tabBarItemStyle: {
+          paddingHorizontal: 0,
         },
 
         tabBarStyle: {
@@ -28,7 +32,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="add-expense"
         options={{
-          title: "Add Expense",
+          title: "Add",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="add-circle" size={size} color={color} />
           ),

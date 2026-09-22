@@ -1,23 +1,32 @@
-import { useFocusEffect } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
+  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { supabase } from "../../lib/supabase";
 
 export default function BudgetScreen() {
   const [budget, setBudget] = useState("10000");
   const [saving, setSaving] = useState(false);
+  const [loadingBudget, setLoadingBudget] = useState(true);
+
   const loadBudget = useCallback(async () => {
     try {
+      setLoadingBudget(true);
+
       const now = new Date();
+
       const currentMonth = `${now.getFullYear()}-${String(
         now.getMonth() + 1,
       ).padStart(2, "0")}-01`;
@@ -41,6 +50,8 @@ export default function BudgetScreen() {
         "Unable to load budget",
         "An unexpected error occurred while loading your budget.",
       );
+    } finally {
+      setLoadingBudget(false);
     }
   }, []);
 
@@ -79,6 +90,7 @@ export default function BudgetScreen() {
       }
 
       const now = new Date();
+
       const currentMonth = `${now.getFullYear()}-${String(
         now.getMonth() + 1,
       ).padStart(2, "0")}-01`;
@@ -101,7 +113,10 @@ export default function BudgetScreen() {
 
       Alert.alert(
         "Budget saved",
-        `Your monthly budget is now ₱${amount.toFixed(2)}.`,
+        `Your monthly budget is now ₱${amount.toLocaleString("en-PH", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })}.`,
       );
     } catch (error) {
       const message =
@@ -116,48 +131,190 @@ export default function BudgetScreen() {
   };
 
   return (
-    <KeyboardAvoidingView
-      className="flex-1 bg-gray-100"
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    <SafeAreaView
+      style={{
+        flex: 1,
+        backgroundColor: "#F4F9FF",
+      }}
+      edges={["top", "left", "right"]}
     >
-      <View className="flex-1 px-5 pb-8 pt-16">
-        <Text className="text-3xl font-bold text-gray-900">Monthly Budget</Text>
+      {/* Background decorations */}
+      <View
+        pointerEvents="none"
+        className="absolute -left-28 -top-24 h-72 w-72 rounded-full bg-[#D8EAFE]"
+      />
 
-        <Text className="mt-2 text-base text-gray-500">
-          Set how much you want to spend this month.
-        </Text>
+      <View
+        pointerEvents="none"
+        className="absolute -right-40 top-44 h-80 w-80 rounded-full bg-[#E4F0FF]"
+      />
 
-        <View className="mt-8 rounded-2xl bg-white p-5">
-          <Text className="mb-3 text-sm font-semibold text-gray-700">
-            Budget Amount
-          </Text>
+      <View
+        pointerEvents="none"
+        className="absolute -bottom-44 -left-28 h-80 w-80 rounded-full bg-[#D9EAFF]"
+      />
 
-          <View className="flex-row items-center rounded-xl border border-gray-200 bg-gray-50 px-4">
-            <Text className="mr-2 text-lg font-semibold text-gray-700">₱</Text>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={{
+            flexGrow: 1,
+            paddingHorizontal: 20,
+            paddingTop: 20,
+            paddingBottom: 40,
+          }}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Top brand row */}
+          <View className="mb-7 flex-row items-center justify-between">
+            <View className="flex-row items-center">
+              <View className="mr-3 h-12 w-12 items-center justify-center rounded-2xl bg-[#1677F2]">
+                <Ionicons name="wallet" size={25} color="#FFFFFF" />
+              </View>
 
-            <TextInput
-              className="flex-1 py-4 text-lg text-gray-900"
-              value={budget}
-              onChangeText={setBudget}
-              keyboardType="decimal-pad"
-              placeholder="10000"
-              placeholderTextColor="#9CA3AF"
-            />
+              <View>
+                <Text className="text-[24px] font-extrabold text-[#071B46]">
+                  PesoTrack
+                </Text>
+
+                <Text className="mt-0.5 text-sm text-[#66758D]">
+                  Plan today. Build tomorrow.
+                </Text>
+              </View>
+            </View>
+
+            <TouchableOpacity
+              className="h-12 w-12 items-center justify-center rounded-full bg-white"
+              onPress={() => router.push("/(tabs)/settings")}
+              activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel="Open settings"
+            >
+              <Ionicons name="settings" size={26} color="#1677F2" />
+            </TouchableOpacity>
           </View>
 
-          <TouchableOpacity
-            className={`mt-5 items-center rounded-xl py-4 ${
-              saving ? "bg-blue-400" : "bg-blue-600"
-            }`}
-            onPress={handleSave}
-            disabled={saving}
-          >
-            <Text className="text-base font-bold text-white">
-              {saving ? "Saving..." : "Save Budget"}
+          {/* Hero */}
+          <View className="mb-7">
+            <View className="flex-row items-center">
+              <View className="mr-4 h-[74px] w-[74px] items-center justify-center rounded-[24px] bg-[#EAF3FF]">
+                <Ionicons name="cash-outline" size={38} color="#1677F2" />
+              </View>
+
+              <View className="flex-1">
+                <Text className="text-[38px] font-extrabold leading-[42px] text-[#071B46]">
+                  Monthly
+                </Text>
+
+                <Text className="text-[38px] font-extrabold leading-[42px] text-[#1677F2]">
+                  Budget
+                </Text>
+              </View>
+            </View>
+
+            <Text className="mt-5 max-w-[310px] text-[17px] leading-7 text-[#586A84]">
+              Set how much you want to spend this month.
             </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </KeyboardAvoidingView>
+          </View>
+
+          {/* Budget Card */}
+          <View className="rounded-[28px] border border-[#E0EBF6] bg-white p-6">
+            <View className="mb-5 flex-row items-center">
+              <View className="mr-3 h-12 w-12 items-center justify-center rounded-full bg-[#DDEEFF]">
+                <Text className="text-[27px] font-extrabold text-[#12305D]">
+                  ₱
+                </Text>
+              </View>
+
+              <Text className="text-[22px] font-extrabold text-[#071B46]">
+                Budget Amount
+              </Text>
+            </View>
+
+            {loadingBudget ? (
+              <View className="min-h-[72px] items-center justify-center rounded-2xl border border-[#D7E5F4] bg-[#F8FBFF]">
+                <ActivityIndicator size="small" color="#1677F2" />
+              </View>
+            ) : (
+              <View className="flex-row items-center rounded-2xl border border-[#D7E5F4] bg-[#F8FBFF] px-4">
+                <Text className="mr-3 text-[25px] font-bold text-[#56667D]">
+                  ₱
+                </Text>
+
+                <View className="mr-3 h-8 w-px bg-[#DCE8F5]" />
+
+                <TextInput
+                  style={{
+                    flex: 1,
+                    minHeight: 68,
+                    color: "#071B46",
+                    fontSize: 23,
+                    fontWeight: "600",
+                  }}
+                  value={budget}
+                  onChangeText={setBudget}
+                  keyboardType="decimal-pad"
+                  placeholder="10000"
+                  placeholderTextColor="#A0AEC0"
+                  editable={!saving}
+                  returnKeyType="done"
+                  onSubmitEditing={handleSave}
+                />
+              </View>
+            )}
+
+            <TouchableOpacity
+              className={`mt-6 min-h-[58px] flex-row items-center justify-center rounded-2xl ${
+                saving ? "bg-[#7CB3F8]" : "bg-[#1677F2]"
+              }`}
+              onPress={handleSave}
+              disabled={saving || loadingBudget}
+              activeOpacity={0.85}
+              accessibilityRole="button"
+            >
+              {saving ? (
+                <>
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+
+                  <Text className="ml-3 text-base font-extrabold text-white">
+                    Saving...
+                  </Text>
+                </>
+              ) : (
+                <>
+                  <Ionicons name="save-outline" size={22} color="#FFFFFF" />
+
+                  <Text className="mx-3 text-base font-extrabold text-white">
+                    Save Budget
+                  </Text>
+
+                  <Ionicons name="arrow-forward" size={22} color="#FFFFFF" />
+                </>
+              )}
+            </TouchableOpacity>
+          </View>
+
+          {/* Tip */}
+          <View className="mt-5 flex-row items-start rounded-[22px] bg-[#EAF4FF] p-4">
+            <View className="mr-3 mt-0.5 h-9 w-9 items-center justify-center rounded-full bg-white">
+              <Ionicons name="bulb-outline" size={20} color="#1677F2" />
+            </View>
+
+            <View className="flex-1">
+              <Text className="font-bold text-[#17335F]">Budget tip</Text>
+
+              <Text className="mt-1 text-sm leading-5 text-[#66758D]">
+                Choose an amount that covers your regular expenses while leaving
+                room for savings and unexpected costs.
+              </Text>
+            </View>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }

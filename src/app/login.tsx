@@ -1,7 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import * as AuthSession from "expo-auth-session";
 import { router } from "expo-router";
-import * as WebBrowser from "expo-web-browser";
 import { useState } from "react";
 import {
   ActivityIndicator,
@@ -16,8 +14,6 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { supabase } from "../lib/supabase";
-
-WebBrowser.maybeCompleteAuthSession();
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
@@ -64,79 +60,12 @@ export default function LoginScreen() {
     }
   };
 
-  const handleGoogleLogin = async () => {
-    if (loading) return;
-
-    try {
-      setLoading(true);
-
-      const redirectTo = AuthSession.makeRedirectUri({
-        scheme: "pesotrack",
-        path: "auth/callback",
-      });
-
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo,
-          skipBrowserRedirect: true,
-        },
-      });
-
-      if (error) {
-        Alert.alert("Google login failed", error.message);
-        return;
-      }
-
-      if (!data.url) {
-        Alert.alert("Google login failed", "Unable to start Google sign-in.");
-        return;
-      }
-
-      const result = await WebBrowser.openAuthSessionAsync(
-        data.url,
-        redirectTo,
-      );
-
-      if (result.type !== "success") {
-        return;
-      }
-
-      const url = new URL(result.url);
-      const code = url.searchParams.get("code");
-
-      if (!code) {
-        Alert.alert(
-          "Google login failed",
-          "No authorization code was returned.",
-        );
-        return;
-      }
-
-      const { error: sessionError } =
-        await supabase.auth.exchangeCodeForSession(code);
-
-      if (sessionError) {
-        Alert.alert("Google login failed", sessionError.message);
-        return;
-      }
-
-      router.replace("/(tabs)");
-    } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : "An unexpected error occurred.";
-
-      Alert.alert("Google login failed", message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <SafeAreaView
-      style={{ flex: 1, backgroundColor: "#F4F9FF" }}
+      style={{
+        flex: 1,
+        backgroundColor: "#F4F9FF",
+      }}
       edges={["top", "left", "right", "bottom"]}
     >
       {/* Background decorations */}
@@ -163,10 +92,9 @@ export default function LoginScreen() {
           style={{ flex: 1 }}
           contentContainerStyle={{
             flexGrow: 1,
-            justifyContent: "flex-start",
+            justifyContent: "center",
             paddingHorizontal: 24,
-            paddingTop: 40,
-            paddingBottom: 64,
+            paddingVertical: 40,
           }}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
@@ -175,7 +103,6 @@ export default function LoginScreen() {
           {/* PesoTrack branding */}
           <View className="mb-6">
             <View className="flex-row items-center">
-              {/* PesoTrack brand icon */}
               <View className="mr-4 h-[68px] w-[68px] items-center justify-center rounded-[22px] bg-[#1677F2]">
                 <Ionicons name="wallet" size={36} color="#FFFFFF" />
               </View>
@@ -236,6 +163,7 @@ export default function LoginScreen() {
                 onChangeText={setEmail}
                 editable={!loading}
                 returnKeyType="next"
+                accessibilityLabel="Email address"
               />
             </View>
 
@@ -268,6 +196,7 @@ export default function LoginScreen() {
                 editable={!loading}
                 returnKeyType="done"
                 onSubmitEditing={handleLogin}
+                accessibilityLabel="Password"
               />
 
               <TouchableOpacity
@@ -287,7 +216,7 @@ export default function LoginScreen() {
               </TouchableOpacity>
             </View>
 
-            {/* Login button */}
+            {/* Login */}
             <TouchableOpacity
               className={`min-h-[56px] flex-row items-center justify-center rounded-2xl ${
                 loading ? "bg-[#7CB3F8]" : "bg-[#1677F2]"
@@ -296,6 +225,10 @@ export default function LoginScreen() {
               disabled={loading}
               activeOpacity={0.85}
               accessibilityRole="button"
+              accessibilityLabel="Log in"
+              accessibilityState={{
+                disabled: loading,
+              }}
             >
               {loading ? (
                 <>
@@ -318,34 +251,6 @@ export default function LoginScreen() {
               )}
             </TouchableOpacity>
 
-            {/* OR divider */}
-            <View className="my-6 flex-row items-center">
-              <View className="h-px flex-1 bg-[#DCE7F2]" />
-
-              <Text className="mx-4 text-sm font-medium text-[#8492A6]">
-                OR
-              </Text>
-
-              <View className="h-px flex-1 bg-[#DCE7F2]" />
-            </View>
-
-            {/* Google login */}
-            <TouchableOpacity
-              className="min-h-[56px] flex-row items-center justify-center rounded-2xl border border-[#CFE0F1] bg-white px-4"
-              onPress={handleGoogleLogin}
-              disabled={loading}
-              activeOpacity={0.8}
-              accessibilityRole="button"
-            >
-              <View className="mr-3 h-8 w-8 items-center justify-center rounded-full bg-[#F7FAFC]">
-                <Text className="text-lg font-extrabold text-[#4285F4]">G</Text>
-              </View>
-
-              <Text className="text-base font-bold text-[#17335F]">
-                Continue with Google
-              </Text>
-            </TouchableOpacity>
-
             {/* Signup */}
             <View className="mt-7 flex-row flex-wrap items-center justify-center">
               <Text className="text-sm text-[#7A879A]">
@@ -356,6 +261,7 @@ export default function LoginScreen() {
                 onPress={() => router.push("/signup")}
                 disabled={loading}
                 accessibilityRole="button"
+                accessibilityLabel="Create a new account"
               >
                 <Text className="text-sm font-extrabold text-[#1677F2]">
                   Sign Up

@@ -70,8 +70,6 @@ export default function LoginScreen() {
     try {
       setLoading(true);
 
-      // Keep the existing scheme for now because Google OAuth
-      // and Supabase redirect configuration currently use it.
       const redirectTo = AuthSession.makeRedirectUri({
         scheme: "pesotrack",
         path: "auth/callback",
@@ -177,7 +175,7 @@ export default function LoginScreen() {
           {/* PesoTrack branding */}
           <View className="mb-6">
             <View className="flex-row items-center">
-              {/* Temporary brand icon */}
+              {/* PesoTrack brand icon */}
               <View className="mr-4 h-[68px] w-[68px] items-center justify-center rounded-[22px] bg-[#1677F2]">
                 <Ionicons name="wallet" size={36} color="#FFFFFF" />
               </View>

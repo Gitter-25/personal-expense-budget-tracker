@@ -97,13 +97,6 @@ export default function RootLayout() {
           headerShown: false,
         }}
       />
-
-      <Stack.Screen
-        name="explore"
-        options={{
-          title: "Explore",
-        }}
-      />
     </Stack>
   );
 }

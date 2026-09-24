@@ -19,6 +19,7 @@ import { supabase } from "../lib/supabase";
 export default function ProfileScreen() {
   const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
+  const [originalFullName, setOriginalFullName] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -36,7 +37,11 @@ export default function ProfileScreen() {
       } = await supabase.auth.getUser();
 
       if (userError || !user) {
-        Alert.alert("Error", "Unable to load your account.");
+        Alert.alert(
+          "Session error",
+          "Your account could not be verified. Please log in again.",
+        );
+
         router.replace("/login");
         return;
       }
@@ -47,19 +52,22 @@ export default function ProfileScreen() {
         .from("profiles")
         .select("full_name")
         .eq("id", user.id)
-        .single();
+        .maybeSingle();
 
       if (error) {
-        Alert.alert("Error", "Unable to load your profile.");
+        Alert.alert("Unable to load profile", error.message);
         return;
       }
 
-      setFullName(data.full_name ?? "");
+      const loadedName = data?.full_name ?? "";
+
+      setFullName(loadedName);
+      setOriginalFullName(loadedName);
     } catch (error) {
       console.error("Unexpected error loading profile:", error);
 
       Alert.alert(
-        "Error",
+        "Unable to load profile",
         "An unexpected error occurred while loading your profile.",
       );
     } finally {
@@ -72,8 +80,23 @@ export default function ProfileScreen() {
 
     Keyboard.dismiss();
 
-    if (!fullName.trim()) {
+    const trimmedName = fullName.trim();
+
+    if (!trimmedName) {
       Alert.alert("Missing information", "Please enter your full name.");
+      return;
+    }
+
+    if (trimmedName.length < 2) {
+      Alert.alert("Invalid name", "Please enter at least 2 characters.");
+      return;
+    }
+
+    if (trimmedName === originalFullName.trim()) {
+      Alert.alert(
+        "No changes",
+        "Your profile information is already up to date.",
+      );
       return;
     }
 
@@ -90,31 +113,41 @@ export default function ProfileScreen() {
           "Session error",
           "Your session could not be verified. Please log in again.",
         );
+
         router.replace("/login");
         return;
       }
 
-      const { error } = await supabase
-        .from("profiles")
-        .update({
-          full_name: fullName.trim(),
+      const { error } = await supabase.from("profiles").upsert(
+        {
+          id: user.id,
+          full_name: trimmedName,
           updated_at: new Date().toISOString(),
-        })
-        .eq("id", user.id);
+        },
+        {
+          onConflict: "id",
+        },
+      );
 
       if (error) {
-        Alert.alert("Save failed", error.message);
+        Alert.alert("Unable to save profile", error.message);
         return;
       }
 
-      Alert.alert("Profile saved", "Your profile has been updated.");
+      setFullName(trimmedName);
+      setOriginalFullName(trimmedName);
+
+      Alert.alert(
+        "Profile saved",
+        "Your profile has been updated successfully.",
+      );
     } catch (error) {
       const message =
         error instanceof Error
           ? error.message
           : "An unexpected error occurred.";
 
-      Alert.alert("Save failed", message);
+      Alert.alert("Unable to save profile", message);
     } finally {
       setSaving(false);
     }
@@ -139,6 +172,8 @@ export default function ProfileScreen() {
       </SafeAreaView>
     );
   }
+
+  const hasChanges = fullName.trim() !== originalFullName.trim();
 
   return (
     <SafeAreaView
@@ -176,7 +211,7 @@ export default function ProfileScreen() {
           {/* Header */}
           <View className="mb-7 flex-row items-center">
             <TouchableOpacity
-              className="mr-3 h-12 w-12 items-center justify-center rounded-2xl bg-white"
+              className="mr-3 h-12 w-12 items-center justify-center rounded-2xl border border-[#E3EDF8] bg-white"
               onPress={() => router.back()}
               activeOpacity={0.8}
               accessibilityRole="button"
@@ -202,16 +237,23 @@ export default function ProfileScreen() {
               <Ionicons name="person" size={38} color="#1677F2" />
             </View>
 
-            <Text className="mt-4 text-[22px] font-extrabold text-[#071B46]">
-              {fullName || "PesoTrack User"}
+            <Text
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              className="mt-4 max-w-full text-[22px] font-extrabold text-[#071B46]"
+            >
+              {fullName.trim() || "PesoTrack User"}
             </Text>
 
-            <Text numberOfLines={1} className="mt-1 text-sm text-[#718096]">
-              {email}
+            <Text
+              numberOfLines={1}
+              className="mt-1 max-w-full text-sm text-[#718096]"
+            >
+              {email || "No email available"}
             </Text>
           </View>
 
-          {/* Form card */}
+          {/* Form */}
           <View className="rounded-[26px] border border-[#E3EDF8] bg-white p-5">
             {/* Email */}
             <Text className="mb-2 text-sm font-bold text-[#17335F]">Email</Text>
@@ -230,10 +272,10 @@ export default function ProfileScreen() {
                 }}
                 value={email}
                 editable={false}
+                accessibilityLabel="Email address"
               />
             </View>
 
-            {/* Full Name */}
             <Text className="mb-2 text-sm font-bold text-[#17335F]">
               Full Name
             </Text>
@@ -259,18 +301,32 @@ export default function ProfileScreen() {
                 editable={!saving}
                 returnKeyType="done"
                 onSubmitEditing={handleSave}
+                maxLength={80}
+                accessibilityLabel="Full name"
               />
             </View>
 
+            <Text className="mt-2 text-right text-xs text-[#94A3B8]">
+              {fullName.length}/80
+            </Text>
+
             {/* Save */}
             <TouchableOpacity
-              className={`mt-6 min-h-[56px] flex-row items-center justify-center rounded-2xl ${
-                saving ? "bg-[#7CB3F8]" : "bg-[#1677F2]"
+              className={`mt-5 min-h-[56px] flex-row items-center justify-center rounded-2xl ${
+                saving
+                  ? "bg-[#7CB3F8]"
+                  : hasChanges
+                    ? "bg-[#1677F2]"
+                    : "bg-[#B7D3F7]"
               }`}
               onPress={handleSave}
-              disabled={saving}
+              disabled={saving || !hasChanges}
               activeOpacity={0.85}
               accessibilityRole="button"
+              accessibilityLabel="Save profile changes"
+              accessibilityState={{
+                disabled: saving || !hasChanges,
+              }}
             >
               {saving ? (
                 <>
@@ -285,7 +341,7 @@ export default function ProfileScreen() {
                   <Ionicons name="save-outline" size={21} color="#FFFFFF" />
 
                   <Text className="mx-3 text-base font-extrabold text-white">
-                    Save Changes
+                    {hasChanges ? "Save Changes" : "Saved"}
                   </Text>
 
                   <Ionicons name="checkmark" size={21} color="#FFFFFF" />

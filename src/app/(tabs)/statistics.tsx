@@ -4,6 +4,7 @@ import { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  RefreshControl,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -40,6 +41,20 @@ const formatCurrency = (value: number) => {
   })}`;
 };
 
+const formatCompactCurrency = (value: number) => {
+  if (value >= 1_000_000) {
+    return `₱${(value / 1_000_000).toFixed(1)}M`;
+  }
+
+  if (value >= 1_000) {
+    return `₱${(value / 1_000).toFixed(1)}K`;
+  }
+
+  return `₱${value.toLocaleString("en-PH", {
+    maximumFractionDigits: 0,
+  })}`;
+};
+
 export default function StatisticsScreen() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [lastSevenDayExpenses, setLastSevenDayExpenses] = useState<Expense[]>(
@@ -48,10 +63,13 @@ export default function StatisticsScreen() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [monthlyBudget, setMonthlyBudget] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const loadStatistics = useCallback(async () => {
+  const loadStatistics = useCallback(async (showLoading = true) => {
     try {
-      setLoading(true);
+      if (showLoading) {
+        setLoading(true);
+      }
 
       const now = new Date();
 
@@ -77,7 +95,9 @@ export default function StatisticsScreen() {
           .select("id, amount, expense_date, category_id")
           .gte("expense_date", queryStart)
           .lt("expense_date", firstDayOfNextMonth)
-          .order("expense_date", { ascending: false }),
+          .order("expense_date", {
+            ascending: false,
+          }),
 
         supabase
           .from("budgets")
@@ -142,9 +162,20 @@ export default function StatisticsScreen() {
         "An unexpected error occurred while loading your statistics.",
       );
     } finally {
-      setLoading(false);
+      if (showLoading) {
+        setLoading(false);
+      }
     }
   }, []);
+
+  const handleRefresh = useCallback(async () => {
+    try {
+      setRefreshing(true);
+      await loadStatistics(false);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [loadStatistics]);
 
   useFocusEffect(
     useCallback(() => {
@@ -160,9 +191,12 @@ export default function StatisticsScreen() {
   }, [expenses]);
 
   const remainingBudget = monthlyBudget - totalSpent;
+  const isOverBudget = monthlyBudget > 0 && remainingBudget < 0;
 
-  const budgetPercentage =
-    monthlyBudget > 0 ? Math.min((totalSpent / monthlyBudget) * 100, 100) : 0;
+  const actualBudgetPercentage =
+    monthlyBudget > 0 ? (totalSpent / monthlyBudget) * 100 : 0;
+
+  const budgetBarPercentage = Math.min(actualBudgetPercentage, 100);
 
   const categoryTotals = useMemo(() => {
     return categories
@@ -179,6 +213,7 @@ export default function StatisticsScreen() {
           percentage,
         };
       })
+      .filter((category) => category.total > 0)
       .sort((a, b) => b.total - a.total);
   }, [categories, expenses, totalSpent]);
 
@@ -238,6 +273,13 @@ export default function StatisticsScreen() {
           paddingBottom: 40,
         }}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor="#1677F2"
+          />
+        }
       >
         {/* Top bar */}
         <View className="mb-6 flex-row items-center justify-between">
@@ -252,13 +294,13 @@ export default function StatisticsScreen() {
           </View>
 
           <TouchableOpacity
-            className="h-12 w-12 items-center justify-center rounded-full bg-white"
+            className="h-12 w-12 items-center justify-center rounded-full border border-[#E3EDF8] bg-white"
             onPress={() => router.push("/(tabs)/settings")}
             activeOpacity={0.8}
             accessibilityRole="button"
             accessibilityLabel="Open settings"
           >
-            <Ionicons name="settings" size={26} color="#1677F2" />
+            <Ionicons name="settings-outline" size={25} color="#1677F2" />
           </TouchableOpacity>
         </View>
 
@@ -289,7 +331,7 @@ export default function StatisticsScreen() {
           </View>
         ) : (
           <>
-            {/* Total Spent Card */}
+            {/* Total spent */}
             <View className="overflow-hidden rounded-[28px] bg-[#174EAE] px-5 py-6">
               <View
                 pointerEvents="none"
@@ -327,7 +369,7 @@ export default function StatisticsScreen() {
               </View>
             </View>
 
-            {/* Budget Card */}
+            {/* Budget */}
             <View className="mt-6 rounded-[26px] border border-[#E3EDF8] bg-white p-5">
               <View className="flex-row items-center">
                 <View className="mr-3 h-12 w-12 items-center justify-center rounded-full bg-[#EAF3FF]">
@@ -339,50 +381,90 @@ export default function StatisticsScreen() {
                 </Text>
               </View>
 
-              <View className="mt-5 flex-row justify-between">
-                <View>
+              <View className="mt-5 flex-row">
+                <View className="mr-3 flex-1">
                   <Text className="text-sm text-[#718096]">Budget</Text>
-
-                  <Text className="mt-1 text-xl font-extrabold text-[#071B46]">
-                    {formatCurrency(monthlyBudget)}
-                  </Text>
-                </View>
-
-                <View className="items-end">
-                  <Text className="text-sm text-[#718096]">Remaining</Text>
 
                   <Text
                     numberOfLines={1}
                     adjustsFontSizeToFit
                     className="mt-1 text-xl font-extrabold text-[#071B46]"
                   >
-                    {formatCurrency(remainingBudget)}
+                    {formatCurrency(monthlyBudget)}
+                  </Text>
+                </View>
+
+                <View className="flex-1 items-end">
+                  <Text className="text-sm text-[#718096]">
+                    {isOverBudget ? "Over Budget" : "Remaining"}
+                  </Text>
+
+                  <Text
+                    numberOfLines={1}
+                    adjustsFontSizeToFit
+                    className={`mt-1 text-xl font-extrabold ${
+                      isOverBudget ? "text-[#E91E63]" : "text-[#071B46]"
+                    }`}
+                  >
+                    {isOverBudget
+                      ? formatCurrency(Math.abs(remainingBudget))
+                      : formatCurrency(remainingBudget)}
                   </Text>
                 </View>
               </View>
 
-              <View className="mt-5 h-3 overflow-hidden rounded-full bg-[#E4ECF5]">
-                <View
-                  className="h-full rounded-full bg-[#3D88F7]"
-                  style={{
-                    width: `${budgetPercentage}%`,
-                  }}
-                />
-              </View>
+              {monthlyBudget > 0 ? (
+                <>
+                  <View className="mt-5 h-3 overflow-hidden rounded-full bg-[#E4ECF5]">
+                    <View
+                      className={`h-full rounded-full ${
+                        isOverBudget ? "bg-[#E91E63]" : "bg-[#3D88F7]"
+                      }`}
+                      style={{
+                        width: `${budgetBarPercentage}%`,
+                      }}
+                    />
+                  </View>
 
-              <Text className="mt-3 text-sm text-[#65758B]">
-                {budgetPercentage.toFixed(1)}% of your budget used
-              </Text>
+                  <Text
+                    className={`mt-3 text-sm ${
+                      isOverBudget
+                        ? "font-semibold text-[#E91E63]"
+                        : "text-[#65758B]"
+                    }`}
+                  >
+                    {actualBudgetPercentage.toFixed(1)}%{" of your budget used"}
+                  </Text>
+                </>
+              ) : (
+                <TouchableOpacity
+                  className="mt-5 flex-row items-center justify-center rounded-2xl bg-[#EAF4FF] px-4 py-3"
+                  onPress={() => router.push("/(tabs)/budget")}
+                  activeOpacity={0.8}
+                  accessibilityRole="button"
+                  accessibilityLabel="Set monthly budget"
+                >
+                  <Ionicons
+                    name="add-circle-outline"
+                    size={19}
+                    color="#1677F2"
+                  />
+
+                  <Text className="ml-2 text-sm font-bold text-[#1677F2]">
+                    Set a monthly budget
+                  </Text>
+                </TouchableOpacity>
+              )}
             </View>
 
-            {/* Last 7 Days */}
+            {/* Last 7 days */}
             <View className="mt-6 rounded-[26px] border border-[#E3EDF8] bg-white p-5">
               <View className="mb-1 flex-row items-center">
                 <View className="mr-3 h-12 w-12 items-center justify-center rounded-full bg-[#EEE9FF]">
                   <Ionicons name="bar-chart" size={24} color="#6B54F5" />
                 </View>
 
-                <View>
+                <View className="flex-1">
                   <Text className="text-[22px] font-extrabold text-[#071B46]">
                     Last 7 Days
                   </Text>
@@ -405,16 +487,13 @@ export default function StatisticsScreen() {
                       <Text
                         numberOfLines={1}
                         adjustsFontSizeToFit
-                        className="mb-2 text-[10px] font-semibold text-[#17335F]"
+                        minimumFontScale={0.7}
+                        className="mb-2 w-full text-center text-[10px] font-semibold text-[#17335F]"
                       >
-                        {day.total > 0
-                          ? `₱${day.total.toLocaleString("en-PH", {
-                              maximumFractionDigits: 0,
-                            })}`
-                          : "₱0"}
+                        {formatCompactCurrency(day.total)}
                       </Text>
 
-                      <View className="h-[120px] w-8 items-center justify-end overflow-hidden rounded-xl bg-[#F0F5FB]">
+                      <View className="h-[120px] w-7 items-center justify-end overflow-hidden rounded-xl bg-[#F0F5FB]">
                         <View
                           className="w-full rounded-xl bg-[#4A84F5]"
                           style={{
@@ -432,14 +511,14 @@ export default function StatisticsScreen() {
               </View>
             </View>
 
-            {/* Category Breakdown */}
+            {/* Category breakdown */}
             <View className="mt-6 rounded-[26px] border border-[#E3EDF8] bg-white p-5">
               <View className="flex-row items-center">
                 <View className="mr-3 h-12 w-12 items-center justify-center rounded-full bg-[#FFF1D8]">
                   <Ionicons name="pie-chart" size={24} color="#F59E0B" />
                 </View>
 
-                <View>
+                <View className="flex-1">
                   <Text className="text-[22px] font-extrabold text-[#071B46]">
                     Spending by Category
                   </Text>
@@ -452,22 +531,42 @@ export default function StatisticsScreen() {
 
               {categoryTotals.length === 0 ? (
                 <View className="mt-6 items-center rounded-2xl bg-[#F8FBFF] px-5 py-8">
-                  <Ionicons
-                    name="pie-chart-outline"
-                    size={30}
-                    color="#A0AEC0"
-                  />
+                  <View className="h-14 w-14 items-center justify-center rounded-full bg-[#EAF3FF]">
+                    <Ionicons
+                      name="pie-chart-outline"
+                      size={27}
+                      color="#1677F2"
+                    />
+                  </View>
 
-                  <Text className="mt-3 text-sm text-[#718096]">
-                    No category spending yet.
+                  <Text className="mt-3 font-bold text-[#17335F]">
+                    No spending data yet
                   </Text>
+
+                  <Text className="mt-1 text-center text-sm leading-5 text-[#718096]">
+                    Add expenses to see your category breakdown.
+                  </Text>
+
+                  <TouchableOpacity
+                    className="mt-4 flex-row items-center rounded-xl bg-[#1677F2] px-4 py-2.5"
+                    onPress={() => router.push("/(tabs)/add-expense")}
+                    activeOpacity={0.85}
+                    accessibilityRole="button"
+                    accessibilityLabel="Add expense"
+                  >
+                    <Ionicons name="add" size={18} color="#FFFFFF" />
+
+                    <Text className="ml-2 text-sm font-bold text-white">
+                      Add Expense
+                    </Text>
+                  </TouchableOpacity>
                 </View>
               ) : (
                 <View className="mt-2">
                   {categoryTotals.map((category) => (
                     <View key={category.id} className="mt-5">
                       <View className="flex-row items-center justify-between">
-                        <View className="flex-1 flex-row items-center">
+                        <View className="mr-3 flex-1 flex-row items-center">
                           <View className="h-11 w-11 items-center justify-center rounded-full bg-[#F7FAFD]">
                             <Text className="text-xl">
                               {category.icon ?? "📁"}
@@ -475,7 +574,10 @@ export default function StatisticsScreen() {
                           </View>
 
                           <View className="ml-3 flex-1">
-                            <Text className="font-bold text-[#071B46]">
+                            <Text
+                              numberOfLines={1}
+                              className="font-bold text-[#071B46]"
+                            >
                               {category.name}
                             </Text>
 
@@ -485,7 +587,11 @@ export default function StatisticsScreen() {
                           </View>
                         </View>
 
-                        <Text className="ml-3 font-extrabold text-[#071B46]">
+                        <Text
+                          numberOfLines={1}
+                          adjustsFontSizeToFit
+                          className="max-w-[38%] font-extrabold text-[#071B46]"
+                        >
                           {formatCurrency(category.total)}
                         </Text>
                       </View>

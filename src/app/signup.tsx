@@ -28,9 +28,15 @@ export default function SignupScreen() {
     if (loading) return;
 
     const trimmedEmail = email.trim();
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!trimmedEmail || !password || !confirmPassword) {
       Alert.alert("Missing information", "Please complete all fields.");
+      return;
+    }
+
+    if (!emailPattern.test(trimmedEmail)) {
+      Alert.alert("Invalid email", "Please enter a valid email address.");
       return;
     }
 
@@ -131,7 +137,7 @@ export default function SignupScreen() {
           showsVerticalScrollIndicator={false}
           bounces={false}
         >
-          {/* Brand */}
+          {/* PesoTrack branding */}
           <View className="mb-5">
             <View className="flex-row items-center">
               <View className="mr-4 h-[68px] w-[68px] items-center justify-center rounded-[22px] bg-[#1677F2]">
@@ -244,7 +250,7 @@ export default function SignupScreen() {
               </TouchableOpacity>
             </View>
 
-            {/* Confirm Password */}
+            {/* Confirm password */}
             <Text className="mb-2 text-sm font-bold text-[#17335F]">
               Confirm Password
             </Text>
@@ -304,7 +310,7 @@ export default function SignupScreen() {
               Password must contain at least 6 characters.
             </Text>
 
-            {/* Create account */}
+            {/* Create account button */}
             <TouchableOpacity
               className={`min-h-[56px] flex-row items-center justify-center rounded-2xl ${
                 loading ? "bg-[#7CB3F8]" : "bg-[#1677F2]"
@@ -313,6 +319,7 @@ export default function SignupScreen() {
               disabled={loading}
               activeOpacity={0.85}
               accessibilityRole="button"
+              accessibilityLabel="Create account"
             >
               {loading ? (
                 <>
@@ -345,6 +352,7 @@ export default function SignupScreen() {
                 onPress={() => router.replace("/login")}
                 disabled={loading}
                 accessibilityRole="button"
+                accessibilityLabel="Go to login"
               >
                 <Text className="text-sm font-extrabold text-[#1677F2]">
                   Login

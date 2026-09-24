@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -16,10 +16,33 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { supabase } from "../../lib/supabase";
 
+const formatCurrency = (value: number) => {
+  return `₱${value.toLocaleString("en-PH", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+};
+
 export default function BudgetScreen() {
-  const [budget, setBudget] = useState("10000");
+  const [budget, setBudget] = useState("");
   const [saving, setSaving] = useState(false);
   const [loadingBudget, setLoadingBudget] = useState(true);
+
+  const currentMonthLabel = useMemo(() => {
+    return new Date().toLocaleDateString("en-PH", {
+      month: "long",
+      year: "numeric",
+    });
+  }, []);
+
+  const getCurrentMonth = () => {
+    const now = new Date();
+
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(
+      2,
+      "0",
+    )}-01`;
+  };
 
   const loadBudget = useCallback(async () => {
     try {
@@ -42,7 +65,11 @@ export default function BudgetScreen() {
         return;
       }
 
-      setBudget(String(data?.amount ?? 0));
+      setBudget(
+        data?.amount !== undefined && data?.amount !== null
+          ? String(data.amount)
+          : "",
+      );
     } catch (error) {
       console.error("Unexpected error loading budget:", error);
 
@@ -61,15 +88,35 @@ export default function BudgetScreen() {
     }, [loadBudget]),
   );
 
+  const handleBudgetChange = (value: string) => {
+    const cleanedValue = value.replace(",", ".");
+
+    if (/^\d*\.?\d{0,2}$/.test(cleanedValue)) {
+      setBudget(cleanedValue);
+    }
+  };
+
   const handleSave = async () => {
     if (saving) return;
 
     Keyboard.dismiss();
 
-    const amount = Number(budget);
+    const trimmedBudget = budget.trim();
 
-    if (!budget.trim() || Number.isNaN(amount) || amount < 0) {
+    if (!trimmedBudget) {
+      Alert.alert("Missing budget", "Please enter your monthly budget amount.");
+      return;
+    }
+
+    const amount = Number(trimmedBudget);
+
+    if (!Number.isFinite(amount) || amount < 0) {
       Alert.alert("Invalid budget", "Please enter a valid budget amount.");
+      return;
+    }
+
+    if (amount > 999999999.99) {
+      Alert.alert("Budget too large", "Please enter a smaller budget amount.");
       return;
     }
 
@@ -89,11 +136,7 @@ export default function BudgetScreen() {
         return;
       }
 
-      const now = new Date();
-
-      const currentMonth = `${now.getFullYear()}-${String(
-        now.getMonth() + 1,
-      ).padStart(2, "0")}-01`;
+      const currentMonth = getCurrentMonth();
 
       const { error } = await supabase.from("budgets").upsert(
         {
@@ -111,12 +154,15 @@ export default function BudgetScreen() {
         return;
       }
 
+      setBudget(String(amount));
+
       Alert.alert(
         "Budget saved",
-        `Your monthly budget is now ₱${amount.toLocaleString("en-PH", {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        })}.`,
+        amount === 0
+          ? `Your budget for ${currentMonthLabel} has been set to ₱0.00.`
+          : `Your budget for ${currentMonthLabel} is now ${formatCurrency(
+              amount,
+            )}.`,
       );
     } catch (error) {
       const message =
@@ -188,13 +234,13 @@ export default function BudgetScreen() {
             </View>
 
             <TouchableOpacity
-              className="h-12 w-12 items-center justify-center rounded-full bg-white"
+              className="h-12 w-12 items-center justify-center rounded-full border border-[#E3EDF8] bg-white"
               onPress={() => router.push("/(tabs)/settings")}
               activeOpacity={0.8}
               accessibilityRole="button"
               accessibilityLabel="Open settings"
             >
-              <Ionicons name="settings" size={26} color="#1677F2" />
+              <Ionicons name="settings-outline" size={25} color="#1677F2" />
             </TouchableOpacity>
           </View>
 
@@ -221,23 +267,35 @@ export default function BudgetScreen() {
             </Text>
           </View>
 
-          {/* Budget Card */}
+          {/* Budget card */}
           <View className="rounded-[28px] border border-[#E0EBF6] bg-white p-6">
-            <View className="mb-5 flex-row items-center">
-              <View className="mr-3 h-12 w-12 items-center justify-center rounded-full bg-[#DDEEFF]">
-                <Text className="text-[27px] font-extrabold text-[#12305D]">
-                  ₱
-                </Text>
-              </View>
+            <View className="mb-5 flex-row items-center justify-between">
+              <View className="flex-row items-center">
+                <View className="mr-3 h-12 w-12 items-center justify-center rounded-full bg-[#DDEEFF]">
+                  <Text className="text-[27px] font-extrabold text-[#12305D]">
+                    ₱
+                  </Text>
+                </View>
 
-              <Text className="text-[22px] font-extrabold text-[#071B46]">
-                Budget Amount
-              </Text>
+                <View>
+                  <Text className="text-[22px] font-extrabold text-[#071B46]">
+                    Budget Amount
+                  </Text>
+
+                  <Text className="mt-0.5 text-xs text-[#718096]">
+                    {currentMonthLabel}
+                  </Text>
+                </View>
+              </View>
             </View>
 
             {loadingBudget ? (
               <View className="min-h-[72px] items-center justify-center rounded-2xl border border-[#D7E5F4] bg-[#F8FBFF]">
                 <ActivityIndicator size="small" color="#1677F2" />
+
+                <Text className="mt-2 text-xs text-[#718096]">
+                  Loading budget...
+                </Text>
               </View>
             ) : (
               <View className="flex-row items-center rounded-2xl border border-[#D7E5F4] bg-[#F8FBFF] px-4">
@@ -256,25 +314,32 @@ export default function BudgetScreen() {
                     fontWeight: "600",
                   }}
                   value={budget}
-                  onChangeText={setBudget}
+                  onChangeText={handleBudgetChange}
                   keyboardType="decimal-pad"
-                  placeholder="10000"
+                  placeholder="10000.00"
                   placeholderTextColor="#A0AEC0"
                   editable={!saving}
                   returnKeyType="done"
                   onSubmitEditing={handleSave}
+                  maxLength={12}
+                  accessibilityLabel="Monthly budget amount"
                 />
               </View>
             )}
 
+            <Text className="mt-3 text-xs leading-5 text-[#8794A8]">
+              Enter 0 if you do not want to set a spending limit for this month.
+            </Text>
+
             <TouchableOpacity
-              className={`mt-6 min-h-[58px] flex-row items-center justify-center rounded-2xl ${
-                saving ? "bg-[#7CB3F8]" : "bg-[#1677F2]"
+              className={`mt-5 min-h-[58px] flex-row items-center justify-center rounded-2xl ${
+                saving || loadingBudget ? "bg-[#7CB3F8]" : "bg-[#1677F2]"
               }`}
               onPress={handleSave}
               disabled={saving || loadingBudget}
               activeOpacity={0.85}
               accessibilityRole="button"
+              accessibilityLabel="Save monthly budget"
             >
               {saving ? (
                 <>

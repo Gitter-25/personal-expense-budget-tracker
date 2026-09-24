@@ -4,6 +4,7 @@ import { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  RefreshControl,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -31,10 +32,174 @@ const formatCurrency = (value: number) => {
   })}`;
 };
 
+const formatExpenseDate = (date: string) => {
+  const [year, month, day] = date.split("-").map(Number);
+
+  if (!year || !month || !day) {
+    return date;
+  }
+
+  return new Intl.DateTimeFormat("en-PH", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).format(new Date(year, month - 1, day));
+};
+
 export default function HomeScreen() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loadingExpenses, setLoadingExpenses] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [monthlyBudget, setMonthlyBudget] = useState(0);
+
+  const monthlySpent = useMemo(() => {
+    return expenses.reduce(
+      (total, expense) => total + Number(expense.amount),
+      0,
+    );
+  }, [expenses]);
+
+  const remainingBudget = monthlyBudget - monthlySpent;
+
+  const budgetProgress =
+    monthlyBudget > 0 ? Math.min(monthlySpent / monthlyBudget, 1) : 0;
+
+  const budgetProgressPercentage =
+    monthlyBudget > 0
+      ? Math.min(Math.round((monthlySpent / monthlyBudget) * 100), 100)
+      : 0;
+
+  const recentExpenses = expenses.slice(0, 5);
+
+  const loadExpenses = useCallback(async (showLoading = true) => {
+    try {
+      if (showLoading) {
+        setLoadingExpenses(true);
+      }
+
+      const now = new Date();
+
+      const currentMonth = `${now.getFullYear()}-${String(
+        now.getMonth() + 1,
+      ).padStart(2, "0")}-01`;
+
+      const nextMonthDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+
+      const nextMonth = `${nextMonthDate.getFullYear()}-${String(
+        nextMonthDate.getMonth() + 1,
+      ).padStart(2, "0")}-01`;
+
+      const [expenseResult, budgetResult] = await Promise.all([
+        supabase
+          .from("expenses")
+          .select(
+            "id, amount, description, expense_date, category_id, created_at",
+          )
+          .gte("expense_date", currentMonth)
+          .lt("expense_date", nextMonth)
+          .order("expense_date", {
+            ascending: false,
+          })
+          .order("created_at", {
+            ascending: false,
+          }),
+
+        supabase
+          .from("budgets")
+          .select("amount")
+          .eq("month", currentMonth)
+          .maybeSingle(),
+      ]);
+
+      const { data: expenseData, error: expenseError } = expenseResult;
+      const { data: budgetData, error: budgetError } = budgetResult;
+
+      if (expenseError) {
+        Alert.alert("Unable to load expenses", expenseError.message);
+        return;
+      }
+
+      if (budgetError) {
+        Alert.alert("Unable to load budget", budgetError.message);
+        return;
+      }
+
+      setMonthlyBudget(Number(budgetData?.amount ?? 0));
+
+      const categoryIds = [
+        ...new Set(
+          (expenseData ?? [])
+            .map((expense) => expense.category_id)
+            .filter((id): id is string => Boolean(id)),
+        ),
+      ];
+
+      let categoryMap = new Map<
+        string,
+        {
+          name: string;
+          icon: string | null;
+        }
+      >();
+
+      if (categoryIds.length > 0) {
+        const { data: categoryData, error: categoryError } = await supabase
+          .from("categories")
+          .select("id, name, icon")
+          .in("id", categoryIds);
+
+        if (categoryError) {
+          Alert.alert("Unable to load categories", categoryError.message);
+          return;
+        }
+
+        categoryMap = new Map(
+          (categoryData ?? []).map((category) => [
+            category.id,
+            {
+              name: category.name,
+              icon: category.icon,
+            },
+          ]),
+        );
+      }
+
+      const formattedExpenses: Expense[] = (expenseData ?? []).map(
+        (expense) => ({
+          id: expense.id,
+          amount: Number(expense.amount),
+          description: expense.description,
+          expense_date: expense.expense_date,
+          category_id: expense.category_id,
+          category: expense.category_id
+            ? (categoryMap.get(expense.category_id) ?? null)
+            : null,
+        }),
+      );
+
+      setExpenses(formattedExpenses);
+    } catch (error) {
+      console.error("Unexpected error loading home data:", error);
+
+      Alert.alert(
+        "Unable to load data",
+        "An unexpected error occurred while loading your data.",
+      );
+    } finally {
+      if (showLoading) {
+        setLoadingExpenses(false);
+      }
+    }
+  }, []);
+
+  const handleRefresh = useCallback(async () => {
+    try {
+      setRefreshing(true);
+      await loadExpenses(false);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [loadExpenses]);
 
   const handleDeleteExpense = (expenseId: string) => {
     Alert.alert(
@@ -101,136 +266,6 @@ export default function HomeScreen() {
     });
   };
 
-  const monthlySpent = useMemo(() => {
-    return expenses.reduce(
-      (total, expense) => total + Number(expense.amount),
-      0,
-    );
-  }, [expenses]);
-
-  const remainingBudget = monthlyBudget - monthlySpent;
-
-  const budgetProgress =
-    monthlyBudget > 0 ? Math.min(monthlySpent / monthlyBudget, 1) : 0;
-
-  const recentExpenses = expenses.slice(0, 5);
-
-  const loadExpenses = useCallback(async () => {
-    try {
-      setLoadingExpenses(true);
-
-      const now = new Date();
-
-      const currentMonth = `${now.getFullYear()}-${String(
-        now.getMonth() + 1,
-      ).padStart(2, "0")}-01`;
-
-      const nextMonthDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-
-      const nextMonth = `${nextMonthDate.getFullYear()}-${String(
-        nextMonthDate.getMonth() + 1,
-      ).padStart(2, "0")}-01`;
-
-      const [expenseResult, budgetResult] = await Promise.all([
-        supabase
-          .from("expenses")
-          .select("id, amount, description, expense_date, category_id")
-          .gte("expense_date", currentMonth)
-          .lt("expense_date", nextMonth)
-          .order("expense_date", {
-            ascending: false,
-          })
-          .order("created_at", {
-            ascending: false,
-          }),
-
-        supabase
-          .from("budgets")
-          .select("amount")
-          .eq("month", currentMonth)
-          .maybeSingle(),
-      ]);
-
-      const { data: expenseData, error: expenseError } = expenseResult;
-
-      const { data: budgetData, error: budgetError } = budgetResult;
-
-      if (expenseError) {
-        Alert.alert("Unable to load expenses", expenseError.message);
-        return;
-      }
-
-      if (budgetError) {
-        Alert.alert("Unable to load budget", budgetError.message);
-        return;
-      }
-
-      setMonthlyBudget(Number(budgetData?.amount ?? 0));
-
-      const categoryIds = [
-        ...new Set(
-          (expenseData ?? [])
-            .map((expense) => expense.category_id)
-            .filter((id): id is string => Boolean(id)),
-        ),
-      ];
-
-      let categoryMap = new Map<
-        string,
-        {
-          name: string;
-          icon: string | null;
-        }
-      >();
-
-      if (categoryIds.length > 0) {
-        const { data: categoryData, error: categoryError } = await supabase
-          .from("categories")
-          .select("id, name, icon")
-          .in("id", categoryIds);
-
-        if (categoryError) {
-          Alert.alert("Unable to load categories", categoryError.message);
-          return;
-        }
-
-        categoryMap = new Map(
-          (categoryData ?? []).map((category) => [
-            category.id,
-            {
-              name: category.name,
-              icon: category.icon,
-            },
-          ]),
-        );
-      }
-
-      const formattedExpenses: Expense[] = (expenseData ?? []).map(
-        (expense) => ({
-          id: expense.id,
-          amount: expense.amount,
-          description: expense.description,
-          expense_date: expense.expense_date,
-          category_id: expense.category_id,
-          category: expense.category_id
-            ? (categoryMap.get(expense.category_id) ?? null)
-            : null,
-        }),
-      );
-
-      setExpenses(formattedExpenses);
-    } catch (error) {
-      console.error("Unexpected error loading home data:", error);
-
-      Alert.alert(
-        "Unable to load data",
-        "An unexpected error occurred while loading your data.",
-      );
-    } finally {
-      setLoadingExpenses(false);
-    }
-  }, []);
-
   useFocusEffect(
     useCallback(() => {
       loadExpenses();
@@ -245,6 +280,7 @@ export default function HomeScreen() {
       }}
       edges={["top", "left", "right"]}
     >
+      {/* Background decorations */}
       <View
         pointerEvents="none"
         className="absolute -left-28 -top-24 h-72 w-72 rounded-full bg-[#D8EAFE]"
@@ -263,6 +299,13 @@ export default function HomeScreen() {
           paddingBottom: 40,
         }}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor="#1677F2"
+          />
+        }
       >
         {/* Top bar */}
         <View className="mb-6 flex-row items-center justify-between">
@@ -275,17 +318,17 @@ export default function HomeScreen() {
           </View>
 
           <TouchableOpacity
-            className="h-12 w-12 items-center justify-center rounded-full bg-white"
+            className="h-12 w-12 items-center justify-center rounded-full border border-[#E3EDF8] bg-white"
             onPress={() => router.push("/(tabs)/settings")}
             activeOpacity={0.8}
             accessibilityRole="button"
             accessibilityLabel="Open settings"
           >
-            <Ionicons name="settings" size={26} color="#1677F2" />
+            <Ionicons name="settings-outline" size={25} color="#1677F2" />
           </TouchableOpacity>
         </View>
 
-        {/* Brand */}
+        {/* PesoTrack branding */}
         <View className="mb-6 flex-row items-center">
           <View className="mr-4 h-[70px] w-[70px] items-center justify-center rounded-[22px] bg-[#1677F2]">
             <Ionicons name="wallet" size={38} color="#FFFFFF" />
@@ -308,7 +351,7 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* Budget summary */}
+        {/* Monthly budget summary */}
         <View className="overflow-hidden rounded-[28px] bg-[#1E63E9] px-5 py-6">
           <View
             pointerEvents="none"
@@ -330,20 +373,35 @@ export default function HomeScreen() {
                 Monthly Budget
               </Text>
 
-              <Text className="mt-1 text-[32px] font-extrabold text-white">
+              <Text
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                className="mt-1 text-[32px] font-extrabold text-white"
+              >
                 {formatCurrency(monthlyBudget)}
               </Text>
             </View>
           </View>
 
-          {/* Progress */}
-          <View className="mt-6 h-3 overflow-hidden rounded-full bg-white/25">
-            <View
-              style={{
-                width: `${budgetProgress * 100}%`,
-              }}
-              className="h-full rounded-full bg-[#40D8EA]"
-            />
+          <View className="mt-6">
+            <View className="mb-2 flex-row items-center justify-between">
+              <Text className="text-xs font-medium text-white/75">
+                Budget used
+              </Text>
+
+              <Text className="text-xs font-bold text-white">
+                {budgetProgressPercentage}%
+              </Text>
+            </View>
+
+            <View className="h-3 overflow-hidden rounded-full bg-white/25">
+              <View
+                style={{
+                  width: `${budgetProgress * 100}%`,
+                }}
+                className="h-full rounded-full bg-[#40D8EA]"
+              />
+            </View>
           </View>
 
           <View className="mt-6 flex-row">
@@ -352,10 +410,14 @@ export default function HomeScreen() {
                 <Ionicons name="card-outline" size={23} color="#FFFFFF" />
               </View>
 
-              <View>
+              <View className="flex-1">
                 <Text className="text-xs text-white/70">Total Spent</Text>
 
-                <Text className="mt-1 text-lg font-extrabold text-white">
+                <Text
+                  numberOfLines={1}
+                  adjustsFontSizeToFit
+                  className="mt-1 text-lg font-extrabold text-white"
+                >
                   {formatCurrency(monthlySpent)}
                 </Text>
               </View>
@@ -374,7 +436,9 @@ export default function HomeScreen() {
                 <Text
                   numberOfLines={1}
                   adjustsFontSizeToFit
-                  className="mt-1 text-lg font-extrabold text-white"
+                  className={`mt-1 text-lg font-extrabold ${
+                    remainingBudget < 0 ? "text-[#FFD7DF]" : "text-white"
+                  }`}
                 >
                   {formatCurrency(remainingBudget)}
                 </Text>
@@ -394,6 +458,8 @@ export default function HomeScreen() {
               className="flex-row items-center"
               onPress={() => router.push("/(tabs)/statistics")}
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="View all expense statistics"
             >
               <Text className="mr-1 text-sm font-bold text-[#1677F2]">
                 View All
@@ -404,7 +470,7 @@ export default function HomeScreen() {
           )}
         </View>
 
-        {/* Loading */}
+        {/* Expense content */}
         {loadingExpenses ? (
           <View className="items-center rounded-[24px] border border-[#E3EDF8] bg-white px-5 py-10">
             <ActivityIndicator size="small" color="#1677F2" />
@@ -414,7 +480,6 @@ export default function HomeScreen() {
             </Text>
           </View>
         ) : recentExpenses.length === 0 ? (
-          /* Empty state */
           <View className="items-center rounded-[24px] border border-[#E3EDF8] bg-white px-6 py-10">
             <View className="h-16 w-16 items-center justify-center rounded-full bg-[#EAF3FF]">
               <Ionicons name="receipt-outline" size={30} color="#1677F2" />
@@ -432,6 +497,8 @@ export default function HomeScreen() {
               className="mt-5 flex-row items-center rounded-2xl bg-[#1677F2] px-5 py-3"
               onPress={() => router.push("/(tabs)/add-expense")}
               activeOpacity={0.85}
+              accessibilityRole="button"
+              accessibilityLabel="Add your first expense"
             >
               <Ionicons name="add" size={19} color="#FFFFFF" />
 
@@ -461,13 +528,16 @@ export default function HomeScreen() {
                       </View>
 
                       <View className="flex-1">
-                        <Text className="text-[17px] font-extrabold text-[#071B46]">
+                        <Text
+                          numberOfLines={1}
+                          className="text-[17px] font-extrabold text-[#071B46]"
+                        >
                           {expense.category?.name ?? "Uncategorized"}
                         </Text>
 
                         <Text
-                          numberOfLines={1}
-                          className="mt-1 text-sm text-[#6F7E92]"
+                          numberOfLines={2}
+                          className="mt-1 text-sm leading-5 text-[#6F7E92]"
                         >
                           {expense.description || "No description"}
                         </Text>
@@ -480,15 +550,16 @@ export default function HomeScreen() {
                           />
 
                           <Text className="ml-1.5 text-xs text-[#75859A]">
-                            {expense.expense_date}
+                            {formatExpenseDate(expense.expense_date)}
                           </Text>
                         </View>
                       </View>
                     </View>
 
-                    <View className="rounded-full bg-[#FCE8F0] px-3 py-2">
+                    <View className="max-w-[38%] rounded-full bg-[#FCE8F0] px-3 py-2">
                       <Text
                         numberOfLines={1}
+                        adjustsFontSizeToFit
                         className="font-extrabold text-[#9B174C]"
                       >
                         {formatCurrency(Number(expense.amount))}
@@ -501,6 +572,8 @@ export default function HomeScreen() {
                       className="mr-3 flex-row items-center rounded-xl bg-[#EAF4FF] px-4 py-2.5"
                       onPress={() => handleEditExpense(expense)}
                       activeOpacity={0.8}
+                      accessibilityRole="button"
+                      accessibilityLabel="Edit expense"
                     >
                       <Ionicons
                         name="create-outline"
@@ -517,6 +590,8 @@ export default function HomeScreen() {
                       className="flex-row items-center rounded-xl bg-[#FDE9F0] px-4 py-2.5"
                       onPress={() => handleDeleteExpense(expense.id)}
                       activeOpacity={0.8}
+                      accessibilityRole="button"
+                      accessibilityLabel="Delete expense"
                     >
                       <Ionicons
                         name="trash-outline"

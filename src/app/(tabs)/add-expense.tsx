@@ -70,17 +70,28 @@ export default function AddExpenseScreen() {
     return `${year}-${month}-${day}`;
   };
 
+  const handleAmountChange = (value: string) => {
+    // Allow numbers with a maximum of two decimal places.
+    const cleanedValue = value.replace(",", ".");
+
+    if (/^\d*\.?\d{0,2}$/.test(cleanedValue)) {
+      setAmount(cleanedValue);
+    }
+  };
+
   const handleSaveExpense = async () => {
     if (saving) return;
 
     Keyboard.dismiss();
 
-    if (!amount.trim()) {
+    const trimmedAmount = amount.trim();
+
+    if (!trimmedAmount) {
       Alert.alert("Missing amount", "Please enter the expense amount.");
       return;
     }
 
-    const numericAmount = Number(amount);
+    const numericAmount = Number(trimmedAmount);
 
     if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
       Alert.alert("Invalid amount", "Please enter an amount greater than 0.");
@@ -121,11 +132,14 @@ export default function AddExpenseScreen() {
         return;
       }
 
-      Alert.alert("Success", "Expense saved successfully.");
-
       setAmount("");
       setDescription("");
       setCategoryId("");
+
+      Alert.alert(
+        "Expense saved",
+        "Your expense has been recorded successfully.",
+      );
     } catch (error) {
       const message =
         error instanceof Error
@@ -188,7 +202,7 @@ export default function AddExpenseScreen() {
             </View>
           </View>
 
-          {/* Amount Card */}
+          {/* Amount */}
           <View className="rounded-[26px] border border-[#E3EDF8] bg-white p-4">
             <View className="mb-4 flex-row items-center">
               <View className="mr-3 h-9 w-9 items-center justify-center rounded-full bg-[#EAF3FF]">
@@ -211,6 +225,7 @@ export default function AddExpenseScreen() {
 
               <TextInput
                 style={{
+                  flex: 1,
                   minHeight: 54,
                   color: "#071B46",
                   fontSize: 16,
@@ -220,8 +235,10 @@ export default function AddExpenseScreen() {
                 placeholderTextColor="#A0AEC0"
                 keyboardType="decimal-pad"
                 value={amount}
-                onChangeText={setAmount}
+                onChangeText={handleAmountChange}
                 editable={!saving}
+                maxLength={12}
+                accessibilityLabel="Expense amount"
               />
             </View>
           </View>
@@ -247,10 +264,36 @@ export default function AddExpenseScreen() {
                 </Text>
               </View>
             ) : categories.length === 0 ? (
-              <View className="rounded-[24px] border border-[#E3EDF8] bg-white px-5 py-8">
-                <Text className="text-center text-sm text-[#718096]">
-                  No categories available.
+              <View className="items-center rounded-[24px] border border-[#E3EDF8] bg-white px-5 py-7">
+                <View className="h-12 w-12 items-center justify-center rounded-full bg-[#EAF3FF]">
+                  <Ionicons
+                    name="folder-open-outline"
+                    size={24}
+                    color="#1677F2"
+                  />
+                </View>
+
+                <Text className="mt-3 font-bold text-[#17335F]">
+                  No categories available
                 </Text>
+
+                <Text className="mt-1 text-center text-sm text-[#718096]">
+                  Try loading your categories again.
+                </Text>
+
+                <TouchableOpacity
+                  className="mt-4 flex-row items-center rounded-xl bg-[#EAF4FF] px-4 py-2.5"
+                  onPress={loadCategories}
+                  activeOpacity={0.8}
+                  accessibilityRole="button"
+                  accessibilityLabel="Retry loading categories"
+                >
+                  <Ionicons name="refresh" size={18} color="#1677F2" />
+
+                  <Text className="ml-2 text-sm font-bold text-[#1677F2]">
+                    Retry
+                  </Text>
+                </TouchableOpacity>
               </View>
             ) : (
               <View className="flex-row flex-wrap justify-between">
@@ -268,22 +311,43 @@ export default function AddExpenseScreen() {
                       onPress={() => setCategoryId(item.id)}
                       disabled={saving}
                       activeOpacity={0.85}
+                      accessibilityRole="button"
+                      accessibilityLabel={`${item.name} category`}
+                      accessibilityState={{
+                        selected,
+                        disabled: saving,
+                      }}
                     >
                       <View
                         className={`h-10 w-10 items-center justify-center rounded-full ${
                           selected ? "bg-white/15" : "bg-[#F5F9FF]"
                         }`}
                       >
-                        <Text className="text-l">{item.icon ?? "📁"}</Text>
+                        <Text className="text-xl">{item.icon ?? "📁"}</Text>
                       </View>
 
                       <Text
+                        numberOfLines={1}
                         className={`mt-1.5 text-base font-extrabold ${
                           selected ? "text-white" : "text-[#071B46]"
                         }`}
                       >
                         {item.name}
                       </Text>
+
+                      {selected && (
+                        <View className="mt-1 flex-row items-center">
+                          <Ionicons
+                            name="checkmark-circle"
+                            size={15}
+                            color="#FFFFFF"
+                          />
+
+                          <Text className="ml-1 text-xs font-medium text-white/90">
+                            Selected
+                          </Text>
+                        </View>
+                      )}
                     </TouchableOpacity>
                   );
                 })}
@@ -301,6 +365,8 @@ export default function AddExpenseScreen() {
               <Text className="text-[20px] font-extrabold text-[#071B46]">
                 Description
               </Text>
+
+              <Text className="ml-2 text-xs text-[#94A3B8]">Optional</Text>
             </View>
 
             <View className="rounded-[24px] border border-[#E3EDF8] bg-white p-4">
@@ -319,6 +385,7 @@ export default function AddExpenseScreen() {
                 onChangeText={setDescription}
                 editable={!saving}
                 maxLength={150}
+                accessibilityLabel="Expense description"
               />
 
               <Text className="mt-2 text-right text-xs text-[#94A3B8]">
@@ -330,11 +397,13 @@ export default function AddExpenseScreen() {
           {/* Save */}
           <TouchableOpacity
             className={`mt-7 min-h-[56px] flex-row items-center justify-center rounded-2xl ${
-              saving ? "bg-[#7CB3F8]" : "bg-[#1677F2]"
+              saving || loadingCategories ? "bg-[#7CB3F8]" : "bg-[#1677F2]"
             }`}
             onPress={handleSaveExpense}
             disabled={saving || loadingCategories}
             activeOpacity={0.85}
+            accessibilityRole="button"
+            accessibilityLabel="Save expense"
           >
             {saving ? (
               <>

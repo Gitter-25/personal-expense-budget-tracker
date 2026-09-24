@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -15,38 +15,48 @@ import { supabase } from "../../lib/supabase";
 export default function SettingsScreen() {
   const [email, setEmail] = useState("");
   const [loadingUser, setLoadingUser] = useState(true);
+  const [userLoadFailed, setUserLoadFailed] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
 
-  useEffect(() => {
-    const loadUser = async () => {
-      try {
-        setLoadingUser(true);
+  const loadUser = useCallback(async () => {
+    try {
+      setLoadingUser(true);
+      setUserLoadFailed(false);
 
-        const {
-          data: { user },
-          error,
-        } = await supabase.auth.getUser();
+      const {
+        data: { user },
+        error,
+      } = await supabase.auth.getUser();
 
-        if (error) {
-          console.error("Unable to load user:", error.message);
-          return;
-        }
-
-        setEmail(user?.email ?? "");
-      } catch (error) {
-        console.error("Unexpected error loading user:", error);
-      } finally {
-        setLoadingUser(false);
+      if (error) {
+        console.error("Unable to load user:", error.message);
+        setUserLoadFailed(true);
+        return;
       }
-    };
 
-    loadUser();
+      if (!user) {
+        setEmail("");
+        setUserLoadFailed(true);
+        return;
+      }
+
+      setEmail(user.email ?? "");
+    } catch (error) {
+      console.error("Unexpected error loading user:", error);
+      setUserLoadFailed(true);
+    } finally {
+      setLoadingUser(false);
+    }
   }, []);
+
+  useEffect(() => {
+    loadUser();
+  }, [loadUser]);
 
   const handleLogout = () => {
     if (loggingOut) return;
 
-    Alert.alert("Log Out", "Are you sure you want to log out?", [
+    Alert.alert("Log Out", "Are you sure you want to log out of PesoTrack?", [
       {
         text: "Cancel",
         style: "cancel",
@@ -126,7 +136,7 @@ export default function SettingsScreen() {
           </View>
         </View>
 
-        {/* Account Card */}
+        {/* Account */}
         <View className="rounded-[26px] border border-[#E3EDF8] bg-white p-5">
           <View className="flex-row items-center">
             <View className="mr-4 h-14 w-14 items-center justify-center rounded-full bg-[#EAF3FF]">
@@ -146,6 +156,26 @@ export default function SettingsScreen() {
                     Loading account...
                   </Text>
                 </View>
+              ) : userLoadFailed ? (
+                <View className="mt-2">
+                  <Text className="text-sm text-[#D92D5E]">
+                    Unable to load account.
+                  </Text>
+
+                  <TouchableOpacity
+                    className="mt-2 self-start flex-row items-center"
+                    onPress={loadUser}
+                    activeOpacity={0.8}
+                    accessibilityRole="button"
+                    accessibilityLabel="Retry loading account"
+                  >
+                    <Ionicons name="refresh" size={16} color="#1677F2" />
+
+                    <Text className="ml-1 text-sm font-bold text-[#1677F2]">
+                      Retry
+                    </Text>
+                  </TouchableOpacity>
+                </View>
               ) : (
                 <Text numberOfLines={1} className="mt-1 text-sm text-[#66758D]">
                   {email || "No email available"}
@@ -158,8 +188,14 @@ export default function SettingsScreen() {
           <TouchableOpacity
             className="mt-6 flex-row items-center rounded-2xl bg-[#F7FAFF] px-4 py-4"
             onPress={() => router.push("/profile")}
+            disabled={loadingUser || loggingOut}
             activeOpacity={0.8}
             accessibilityRole="button"
+            accessibilityLabel="Open my profile"
+            accessibilityHint="View and update your profile details"
+            accessibilityState={{
+              disabled: loadingUser || loggingOut,
+            }}
           >
             <View className="mr-3 h-10 w-10 items-center justify-center rounded-full bg-[#E8F2FF]">
               <Ionicons name="person-outline" size={21} color="#1677F2" />
@@ -177,7 +213,7 @@ export default function SettingsScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* App Info */}
+        {/* App information */}
         <View className="mt-5 rounded-[26px] border border-[#E3EDF8] bg-white p-5">
           <View className="flex-row items-center">
             <View className="mr-3 h-11 w-11 items-center justify-center rounded-full bg-[#EAF3FF]">
@@ -205,6 +241,10 @@ export default function SettingsScreen() {
           disabled={loggingOut}
           activeOpacity={0.85}
           accessibilityRole="button"
+          accessibilityLabel="Log out"
+          accessibilityState={{
+            disabled: loggingOut,
+          }}
         >
           {loggingOut ? (
             <>
@@ -225,8 +265,13 @@ export default function SettingsScreen() {
           )}
         </TouchableOpacity>
 
+        {/* Footer */}
         <View className="mt-7 items-center">
-          <Text className="text-xs text-[#9AA8B9]">PesoTrack</Text>
+          <Text className="text-xs font-medium text-[#9AA8B9]">PesoTrack</Text>
+
+          <Text className="mt-1 text-[11px] text-[#AAB5C3]">
+            Better habits. Brighter future.
+          </Text>
         </View>
       </ScrollView>
     </SafeAreaView>

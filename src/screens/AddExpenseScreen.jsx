@@ -1,18 +1,18 @@
-import AddExpenseDescriptionField from "../components/AddExpenseDescriptionField";
-import AddExpenseCategorySelector from "../components/AddExpenseCategorySelector";
-import AddExpenseAmountField from "../components/AddExpenseAmountField";
+import ExpenseDescriptionField from "../components/ExpenseDescriptionField";
+import ExpenseCategorySelector from "../components/ExpenseCategorySelector";
+import ExpenseAmountField from "../components/ExpenseAmountField";
 
 import AddExpenseBackground from "../components/AddExpenseBackground";
 import { Ionicons } from "@expo/vector-icons";
 
-import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import styles from "../styles/AddExpenseScreen.styles";
 import useAddExpense from "../hooks/useAddExpense";
 
 export default function AddExpenseScreen() {
-  const { amount, description, setDescription, categoryId, setCategoryId, categories, loadingCategories, saving, handleAmountChange, handleSaveExpense, navigation } = useAddExpense();
+  const { amount, description, setDescription, categoryId, setCategoryId, categories, loadCategories, loadingCategories, saving, handleAmountChange, handleSaveExpense } = useAddExpense();
   return (
     <SafeAreaView
       style={styles.layout}
@@ -44,9 +44,9 @@ export default function AddExpenseScreen() {
             </View>
           </View>
 
-          <AddExpenseAmountField amount={amount} handleAmountChange={handleAmountChange} saving={saving} />
-        <AddExpenseCategorySelector categories={categories} categoryId={categoryId} setCategoryId={setCategoryId} saving={saving} loadingCategories={loadingCategories} />
-        <AddExpenseDescriptionField description={description} setDescription={setDescription} saving={saving} />
+          <ExpenseAmountField styles={styles} amount={amount} handleAmountChange={handleAmountChange} saving={saving} />
+        <ExpenseCategorySelector styles={styles} loadCategories={loadCategories} categories={categories} categoryId={categoryId} setCategoryId={setCategoryId} saving={saving} loadingCategories={loadingCategories} />
+        <ExpenseDescriptionField styles={styles} description={description} setDescription={setDescription} saving={saving} />
         {/* Save */}
           <TouchableOpacity
             style={[styles.save, saving || loadingCategories ? styles.saveState : styles.saveState2]}

@@ -1,15 +1,14 @@
-import { ActivityIndicator, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import styles from "../styles/AddExpenseScreen.styles";
 
-export default function AddExpenseCategorySelector({ categories, categoryId, setCategoryId, saving, loadingCategories }) {
+export default function ExpenseCategorySelector({ styles, editing = false, loadCategories, categories, categoryId, setCategoryId, saving, loadingCategories = false }) {
   return <>
     <View style={styles.category}>
-            <View style={styles.category2}>
-              <View style={styles.category3}>
+            <View style={editing ? styles.amount2 : styles.category2}>
+              <View style={editing ? styles.category2 : styles.category3}>
                 <Ionicons name="grid-outline" size={20} color="#1677F2" />
               </View>
-              <Text style={styles.category4}>
+              <Text style={editing ? styles.category3 : styles.category4}>
                 Category
               </Text>
             </View>
@@ -22,6 +21,18 @@ export default function AddExpenseCategorySelector({ categories, categoryId, set
                 </Text>
               </View>
             ) : categories.length === 0 ? (
+              editing ? (
+              <View style={styles.category4}>
+                <Ionicons
+                  name="folder-open-outline"
+                  size={30}
+                  color="#A0AEC0"
+                />
+                <Text style={styles.screen2}>
+                  No categories available.
+                </Text>
+              </View>
+              ) : (
               <View style={styles.category7}>
                 <View style={styles.category8}>
                   <Ionicons
@@ -49,15 +60,16 @@ export default function AddExpenseCategorySelector({ categories, categoryId, set
                   </Text>
                 </TouchableOpacity>
               </View>
+              )
             ) : (
-              <View style={styles.category13}>
+              <View style={editing ? styles.category5 : styles.category13}>
                 {categories.map((item) => {
                   const selected = categoryId === item.id;
 
                   return (
                     <TouchableOpacity
                       key={item.id}
-                      style={[styles.category14, selected
+                      style={[editing ? styles.category6 : styles.category14, selected
                           ? styles.categoryState
                           : styles.categoryState2]}
                       onPress={() => setCategoryId(item.id)}
@@ -71,25 +83,25 @@ export default function AddExpenseCategorySelector({ categories, categoryId, set
                       }}
                     >
                       <View
-                        style={[styles.category15, selected ? styles.categoryState3 : styles.categoryState4]}
+                        style={[editing ? styles.category7 : styles.category15, selected ? styles.categoryState3 : styles.categoryState4]}
                       >
-                        <Text style={styles.category16}>{item.icon ?? "📁"}</Text>
+                        <Text style={editing ? styles.category8 : styles.category16}>{item.icon ?? "📁"}</Text>
                       </View>
                       <Text
                         numberOfLines={1}
-                        style={[styles.category17, selected ? styles.categoryState5 : styles.categoryState6]}
+                        style={[editing ? styles.category9 : styles.category17, selected ? styles.categoryState5 : styles.categoryState6]}
                       >
                         {item.name}
                       </Text>
 
                       {selected && (
-                        <View style={styles.category18}>
+                        <View style={editing ? styles.category10 : styles.category18}>
                           <Ionicons
                             name="checkmark-circle"
-                            size={15}
+                            size={editing ? 14 : 15}
                             color="#FFFFFF"
                           />
-                          <Text style={styles.category19}>
+                          <Text style={editing ? styles.category11 : styles.category19}>
                             Selected
                           </Text>
                         </View>

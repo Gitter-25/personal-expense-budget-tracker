@@ -10,9 +10,10 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { supabase } from "../../lib/supabase";
+import { useAuth } from "../../context/AuthContext";
 
 export default function SettingsScreen() {
+  const { user, signOut } = useAuth();
   const [email, setEmail] = useState("");
   const [loadingUser, setLoadingUser] = useState(true);
   const [userLoadFailed, setUserLoadFailed] = useState(false);
@@ -22,17 +23,6 @@ export default function SettingsScreen() {
     try {
       setLoadingUser(true);
       setUserLoadFailed(false);
-
-      const {
-        data: { user },
-        error,
-      } = await supabase.auth.getUser();
-
-      if (error) {
-        console.error("Unable to load user:", error.message);
-        setUserLoadFailed(true);
-        return;
-      }
 
       if (!user) {
         setEmail("");
@@ -47,7 +37,7 @@ export default function SettingsScreen() {
     } finally {
       setLoadingUser(false);
     }
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     loadUser();
@@ -68,14 +58,7 @@ export default function SettingsScreen() {
           try {
             setLoggingOut(true);
 
-            const { error } = await supabase.auth.signOut();
-
-            if (error) {
-              Alert.alert("Unable to log out", error.message);
-              return;
-            }
-
-            router.replace("/login");
+            await signOut();
           } catch (error) {
             const message =
               error instanceof Error

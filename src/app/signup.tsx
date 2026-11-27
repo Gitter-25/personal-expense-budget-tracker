@@ -13,9 +13,10 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { supabase } from "../lib/supabase";
+import { registerUser } from "../storage/userStorage";
 
 export default function SignupScreen() {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -30,7 +31,7 @@ export default function SignupScreen() {
     const trimmedEmail = email.trim();
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    if (!trimmedEmail || !password || !confirmPassword) {
+    if (!name.trim() || !trimmedEmail || !password || !confirmPassword) {
       Alert.alert("Missing information", "Please complete all fields.");
       return;
     }
@@ -45,49 +46,19 @@ export default function SignupScreen() {
       return;
     }
 
-    if (password.length < 6) {
-      Alert.alert("Weak password", "Password must be at least 6 characters.");
+    if (password.length < 8) {
+      Alert.alert("Weak password", "Password must be at least 8 characters.");
       return;
     }
 
     try {
       setLoading(true);
 
-      const { data, error } = await supabase.auth.signUp({
-        email: trimmedEmail,
-        password,
-      });
-
-      if (error) {
-        Alert.alert("Signup failed", error.message);
-        return;
-      }
-
-      if (!data.session) {
-        Alert.alert(
-          "Account created",
-          "Please check your email and confirm your account before logging in.",
-          [
-            {
-              text: "Go to Login",
-              onPress: () => router.replace("/login"),
-            },
-          ],
-        );
-
-        return;
-      }
-
-      Alert.alert(
-        "Account created",
-        "Your account has been created successfully.",
-        [
-          {
-            text: "Continue",
-            onPress: () => router.replace("/(tabs)"),
-          },
-        ],
-      );
+      // Register locally; no email confirmation or internet is required.
+      await registerUser({ name, email: trimmedEmail, password, confirmPassword });
+      Alert.alert("Account created", "You can now log in.", [
+        { text: "Go to Login", onPress: () => router.replace("/login") },
+      ]);
     } catch (error) {
       const message =
         error instanceof Error
@@ -172,6 +143,34 @@ export default function SignupScreen() {
               <Text className="mt-2 text-[15px] leading-6 text-[#718096]">
                 Create your PesoTrack account and start managing your budget.
               </Text>
+            </View>
+
+            {/* Full Name */}
+            <Text className="mb-2 text-sm font-bold text-[#17335F]">Full Name</Text>
+
+            <View className="mb-5 flex-row items-center rounded-2xl border border-[#D7E5F4] bg-[#F8FBFF] px-4">
+              <Ionicons name="person-outline" size={21} color="#6EA8F4" />
+
+              <View className="mx-3 h-7 w-px bg-[#DCE8F5]" />
+
+              <TextInput
+                style={{
+                  flex: 1,
+                  minHeight: 56,
+                  color: "#071B46",
+                  fontSize: 16,
+                }}
+                placeholder="Enter your full name"
+                placeholderTextColor="#A0AEC0"
+                autoCapitalize="words"
+                autoCorrect={false}
+                autoComplete="name"
+                textContentType="name"
+                value={name}
+                onChangeText={setName}
+                editable={!loading}
+                returnKeyType="next"
+              />
             </View>
 
             {/* Email */}
@@ -307,7 +306,7 @@ export default function SignupScreen() {
             </View>
 
             <Text className="mb-7 text-xs leading-5 text-[#8794A8]">
-              Password must contain at least 6 characters.
+              Password must contain at least 8 characters.
             </Text>
 
             {/* Create account button */}

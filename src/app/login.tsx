@@ -13,9 +13,10 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { supabase } from "../lib/supabase";
+import { useAuth } from "../context/AuthContext";
 
 export default function LoginScreen() {
+  const { signIn } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -37,17 +38,8 @@ export default function LoginScreen() {
     try {
       setLoading(true);
 
-      const { error } = await supabase.auth.signInWithPassword({
-        email: trimmedEmail,
-        password,
-      });
-
-      if (error) {
-        Alert.alert("Login failed", error.message);
-        return;
-      }
-
-      router.replace("/(tabs)");
+      // Verify local credentials and persist the session.
+      await signIn(trimmedEmail, password);
     } catch (error) {
       const message =
         error instanceof Error

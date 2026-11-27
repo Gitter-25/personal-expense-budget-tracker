@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { useNavigation, useRoute, useFocusEffect } from "@react-navigation/native";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -18,6 +18,7 @@ import { restoreSession } from "../storage/sessionStorage";
 import { updateUserName } from "../storage/userStorage";
 
 export default function ProfileScreen() {
+  const navigation = useNavigation();
   const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
   const [originalFullName, setOriginalFullName] = useState("");
@@ -40,7 +41,7 @@ export default function ProfileScreen() {
           "Your account could not be verified. Please log in again.",
         );
 
-        router.replace("/login");
+        navigation.goBack();
         return;
       }
 
@@ -98,7 +99,7 @@ export default function ProfileScreen() {
           "Your session could not be verified. Please log in again.",
         );
 
-        router.replace("/login");
+        navigation.goBack();
         return;
       }
 
@@ -182,7 +183,7 @@ export default function ProfileScreen() {
           <View className="mb-7 flex-row items-center">
             <TouchableOpacity
               className="mr-3 h-12 w-12 items-center justify-center rounded-2xl border border-[#E3EDF8] bg-white"
-              onPress={() => router.back()}
+              onPress={() => navigation.goBack()}
               activeOpacity={0.8}
               accessibilityRole="button"
               accessibilityLabel="Go back"

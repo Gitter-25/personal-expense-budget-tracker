@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { useNavigation, useRoute, useFocusEffect } from "@react-navigation/native";
 import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -10,9 +10,10 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../context/AuthContext";
 
 export default function SettingsScreen() {
+  const navigation = useNavigation();
   const { user, signOut } = useAuth();
   const [email, setEmail] = useState("");
   const [loadingUser, setLoadingUser] = useState(true);
@@ -170,7 +171,7 @@ export default function SettingsScreen() {
           {/* Profile */}
           <TouchableOpacity
             className="mt-6 flex-row items-center rounded-2xl bg-[#F7FAFF] px-4 py-4"
-            onPress={() => router.push("/profile")}
+            onPress={() => navigation.navigate("Profile")}
             disabled={loadingUser || loggingOut}
             activeOpacity={0.8}
             accessibilityRole="button"

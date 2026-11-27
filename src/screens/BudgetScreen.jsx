@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { router, useFocusEffect } from "expo-router";
+import { useNavigation, useRoute, useFocusEffect } from "@react-navigation/native";
 import { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -14,9 +14,12 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { supabase } from "../../lib/supabase";
+import { useAuth } from "../context/AuthContext";
+import { getExpenses, getExpenseById, addExpense, updateExpense, deleteExpense } from "../storage/expenseStorage";
+import { getMonthlyBudget, saveMonthlyBudget } from "../storage/budgetStorage";
+import { getCategoryOptions, toScreenExpense } from "../utils/finance";
 
-const formatCurrency = (value: number) => {
+const formatCurrency = (value) => {
   return `₱${value.toLocaleString("en-PH", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
@@ -24,6 +27,8 @@ const formatCurrency = (value: number) => {
 };
 
 export default function BudgetScreen() {
+  const navigation = useNavigation();
+  const { user } = useAuth();
   const [budget, setBudget] = useState("");
   const [saving, setSaving] = useState(false);
   const [loadingBudget, setLoadingBudget] = useState(true);
@@ -54,16 +59,7 @@ export default function BudgetScreen() {
         now.getMonth() + 1,
       ).padStart(2, "0")}-01`;
 
-      const { data, error } = await supabase
-        .from("budgets")
-        .select("amount")
-        .eq("month", currentMonth)
-        .maybeSingle();
-
-      if (error) {
-        Alert.alert("Unable to load budget", error.message);
-        return;
-      }
+      const data = await getMonthlyBudget(user.id, currentMonth.slice(0, 7));
 
       setBudget(
         data?.amount !== undefined && data?.amount !== null
@@ -88,7 +84,7 @@ export default function BudgetScreen() {
     }, [loadBudget]),
   );
 
-  const handleBudgetChange = (value: string) => {
+  const handleBudgetChange = (value) => {
     const cleanedValue = value.replace(",", ".");
 
     if (/^\d*\.?\d{0,2}$/.test(cleanedValue)) {
@@ -123,36 +119,7 @@ export default function BudgetScreen() {
     try {
       setSaving(true);
 
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
-
-      if (userError || !user) {
-        Alert.alert(
-          "Session error",
-          "Your session could not be verified. Please log in again.",
-        );
-        return;
-      }
-
-      const currentMonth = getCurrentMonth();
-
-      const { error } = await supabase.from("budgets").upsert(
-        {
-          user_id: user.id,
-          month: currentMonth,
-          amount,
-        },
-        {
-          onConflict: "user_id,month",
-        },
-      );
-
-      if (error) {
-        Alert.alert("Unable to save budget", error.message);
-        return;
-      }
+      await saveMonthlyBudget(user.id, getCurrentMonth().slice(0, 7), amount);
 
       setBudget(String(amount));
 
@@ -235,7 +202,7 @@ export default function BudgetScreen() {
 
             <TouchableOpacity
               className="h-12 w-12 items-center justify-center rounded-full border border-[#E3EDF8] bg-white"
-              onPress={() => router.push("/(tabs)/settings")}
+              onPress={() => navigation.navigate("Settings")}
               activeOpacity={0.8}
               accessibilityRole="button"
               accessibilityLabel="Open settings"

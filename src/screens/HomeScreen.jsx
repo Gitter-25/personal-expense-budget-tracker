@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { router, useFocusEffect } from "expo-router";
+import { useNavigation, useRoute, useFocusEffect } from "@react-navigation/native";
 import { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -11,28 +11,20 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { supabase } from "../../lib/supabase";
+import { useAuth } from "../context/AuthContext";
+import { getExpenses, getExpenseById, addExpense, updateExpense, deleteExpense } from "../storage/expenseStorage";
+import { getMonthlyBudget, saveMonthlyBudget } from "../storage/budgetStorage";
+import { getCategoryOptions, toScreenExpense } from "../utils/finance";
 
-type Expense = {
-  id: string;
-  amount: number;
-  description: string | null;
-  expense_date: string;
-  category_id: string | null;
-  category: {
-    name: string;
-    icon: string | null;
-  } | null;
-};
 
-const formatCurrency = (value: number) => {
+const formatCurrency = (value) => {
   return `₱${value.toLocaleString("en-PH", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}`;
 };
 
-const formatExpenseDate = (date: string) => {
+const formatExpenseDate = (date) => {
   const [year, month, day] = date.split("-").map(Number);
 
   if (!year || !month || !day) {
@@ -47,7 +39,9 @@ const formatExpenseDate = (date: string) => {
 };
 
 export default function HomeScreen() {
-  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const navigation = useNavigation();
+  const { user } = useAuth();
+  const [expenses, setExpenses] = useState([]);
   const [loadingExpenses, setLoadingExpenses] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [monthlyBudget, setMonthlyBudget] = useState(0);
@@ -89,95 +83,14 @@ export default function HomeScreen() {
         nextMonthDate.getMonth() + 1,
       ).padStart(2, "0")}-01`;
 
-      const [expenseResult, budgetResult] = await Promise.all([
-        supabase
-          .from("expenses")
-          .select(
-            "id, amount, description, expense_date, category_id, created_at",
-          )
-          .gte("expense_date", currentMonth)
-          .lt("expense_date", nextMonth)
-          .order("expense_date", {
-            ascending: false,
-          })
-          .order("created_at", {
-            ascending: false,
-          }),
-
-        supabase
-          .from("budgets")
-          .select("amount")
-          .eq("month", currentMonth)
-          .maybeSingle(),
+      const [records, budget, categories] = await Promise.all([
+        getExpenses(user.id), getMonthlyBudget(user.id, currentMonth.slice(0, 7)), getCategoryOptions(user.id),
       ]);
-
-      const { data: expenseData, error: expenseError } = expenseResult;
-      const { data: budgetData, error: budgetError } = budgetResult;
-
-      if (expenseError) {
-        Alert.alert("Unable to load expenses", expenseError.message);
-        return;
-      }
-
-      if (budgetError) {
-        Alert.alert("Unable to load budget", budgetError.message);
-        return;
-      }
-
-      setMonthlyBudget(Number(budgetData?.amount ?? 0));
-
-      const categoryIds = [
-        ...new Set(
-          (expenseData ?? [])
-            .map((expense) => expense.category_id)
-            .filter((id): id is string => Boolean(id)),
-        ),
-      ];
-
-      let categoryMap = new Map<
-        string,
-        {
-          name: string;
-          icon: string | null;
-        }
-      >();
-
-      if (categoryIds.length > 0) {
-        const { data: categoryData, error: categoryError } = await supabase
-          .from("categories")
-          .select("id, name, icon")
-          .in("id", categoryIds);
-
-        if (categoryError) {
-          Alert.alert("Unable to load categories", categoryError.message);
-          return;
-        }
-
-        categoryMap = new Map(
-          (categoryData ?? []).map((category) => [
-            category.id,
-            {
-              name: category.name,
-              icon: category.icon,
-            },
-          ]),
-        );
-      }
-
-      const formattedExpenses: Expense[] = (expenseData ?? []).map(
-        (expense) => ({
-          id: expense.id,
-          amount: Number(expense.amount),
-          description: expense.description,
-          expense_date: expense.expense_date,
-          category_id: expense.category_id,
-          category: expense.category_id
-            ? (categoryMap.get(expense.category_id) ?? null)
-            : null,
-        }),
-      );
-
-      setExpenses(formattedExpenses);
+      setMonthlyBudget(budget?.amount ?? 0);
+      setExpenses(records.map(toScreenExpense)
+        .filter(e => e.expense_date >= currentMonth && e.expense_date < nextMonth)
+        .sort((a,b) => b.expense_date.localeCompare(a.expense_date) || b.created_at.localeCompare(a.created_at))
+        .map(e => ({...e, category: categories.find(c => c.id === e.category_id) ?? null})));
     } catch (error) {
       console.error("Unexpected error loading home data:", error);
 
@@ -201,7 +114,7 @@ export default function HomeScreen() {
     }
   }, [loadExpenses]);
 
-  const handleDeleteExpense = (expenseId: string) => {
+  const handleDeleteExpense = (expenseId) => {
     Alert.alert(
       "Delete Expense",
       "Are you sure you want to delete this expense?",
@@ -215,28 +128,7 @@ export default function HomeScreen() {
           style: "destructive",
           onPress: async () => {
             try {
-              const {
-                data: { user },
-                error: userError,
-              } = await supabase.auth.getUser();
-
-              if (userError || !user) {
-                Alert.alert(
-                  "Session error",
-                  "Your session could not be verified. Please log in again.",
-                );
-                return;
-              }
-
-              const { error } = await supabase
-                .from("expenses")
-                .delete()
-                .eq("id", expenseId);
-
-              if (error) {
-                Alert.alert("Unable to delete expense", error.message);
-                return;
-              }
+              await deleteExpense(user.id, expenseId);
 
               setExpenses((currentExpenses) =>
                 currentExpenses.filter((expense) => expense.id !== expenseId),
@@ -257,13 +149,8 @@ export default function HomeScreen() {
     );
   };
 
-  const handleEditExpense = (expense: Expense) => {
-    router.push({
-      pathname: "/edit-expense",
-      params: {
-        id: expense.id,
-      },
-    });
+  const handleEditExpense = (expense) => {
+    navigation.navigate("EditExpense", { id: expense.id });
   };
 
   useFocusEffect(
@@ -319,7 +206,7 @@ export default function HomeScreen() {
 
           <TouchableOpacity
             className="h-12 w-12 items-center justify-center rounded-full border border-[#E3EDF8] bg-white"
-            onPress={() => router.push("/(tabs)/settings")}
+            onPress={() => navigation.navigate("Settings")}
             activeOpacity={0.8}
             accessibilityRole="button"
             accessibilityLabel="Open settings"
@@ -456,7 +343,7 @@ export default function HomeScreen() {
           {expenses.length > 5 && (
             <TouchableOpacity
               className="flex-row items-center"
-              onPress={() => router.push("/(tabs)/statistics")}
+              onPress={() => navigation.navigate("Statistics")}
               activeOpacity={0.7}
               accessibilityRole="button"
               accessibilityLabel="View all expense statistics"
@@ -495,7 +382,7 @@ export default function HomeScreen() {
 
             <TouchableOpacity
               className="mt-5 flex-row items-center rounded-2xl bg-[#1677F2] px-5 py-3"
-              onPress={() => router.push("/(tabs)/add-expense")}
+              onPress={() => navigation.navigate("AddExpense")}
               activeOpacity={0.85}
               accessibilityRole="button"
               accessibilityLabel="Add your first expense"

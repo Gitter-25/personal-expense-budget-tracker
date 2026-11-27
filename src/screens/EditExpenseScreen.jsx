@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { router, useLocalSearchParams } from "expo-router";
+import { useNavigation, useRoute, useFocusEffect } from "@react-navigation/native";
 import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -14,29 +14,24 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { supabase } from "../lib/supabase";
+import { useAuth } from "../context/AuthContext";
+import { getExpenses, getExpenseById, addExpense, updateExpense, deleteExpense } from "../storage/expenseStorage";
+import { getMonthlyBudget, saveMonthlyBudget } from "../storage/budgetStorage";
+import { getCategoryOptions, toScreenExpense } from "../utils/finance";
 
-type Category = {
-  id: string;
-  name: string;
-  icon: string | null;
-};
 
-type OriginalExpense = {
-  amount: string;
-  description: string;
-  categoryId: string;
-};
 
 export default function EditExpenseScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const navigation = useNavigation();
+  const { user } = useAuth();
+  const { id } = useRoute().params ?? {};
 
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [categoryId, setCategoryId] = useState("");
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [categories, setCategories] = useState([]);
   const [originalExpense, setOriginalExpense] =
-    useState<OriginalExpense | null>(null);
+    useState(null);
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -47,7 +42,7 @@ export default function EditExpenseScreen() {
         Alert.alert("Missing expense", "Expense ID is missing.", [
           {
             text: "OK",
-            onPress: () => router.back(),
+            onPress: () => navigation.goBack(),
           },
         ]);
 
@@ -58,53 +53,14 @@ export default function EditExpenseScreen() {
       try {
         setLoading(true);
 
-        const {
-          data: { user },
-          error: userError,
-        } = await supabase.auth.getUser();
-
-        if (userError || !user) {
-          Alert.alert(
-            "Session error",
-            "Your session could not be verified. Please log in again.",
-          );
-
-          router.replace("/login");
-          return;
-        }
-
-        const [expenseResult, categoryResult] = await Promise.all([
-          supabase
-            .from("expenses")
-            .select("id, amount, description, category_id")
-            .eq("id", id)
-            .eq("user_id", user.id)
-            .maybeSingle(),
-
-          supabase
-            .from("categories")
-            .select("id, name, icon")
-            .order("created_at", { ascending: true }),
-        ]);
-
-        const { data: expense, error: expenseError } = expenseResult;
-        const { data: categoryData, error: categoryError } = categoryResult;
-
-        if (expenseError) {
-          Alert.alert("Unable to load expense", expenseError.message);
-          return;
-        }
-
-        if (categoryError) {
-          Alert.alert("Unable to load categories", categoryError.message);
-          return;
-        }
+        const [record, categoryData] = await Promise.all([getExpenseById(user.id, id), getCategoryOptions(user.id)]);
+        const expense = record ? toScreenExpense(record) : null;
 
         if (!expense) {
           Alert.alert("Expense not found", "This expense no longer exists.", [
             {
               text: "OK",
-              onPress: () => router.back(),
+              onPress: () => navigation.goBack(),
             },
           ]);
           return;
@@ -139,7 +95,7 @@ export default function EditExpenseScreen() {
     loadExpense();
   }, [id]);
 
-  const handleAmountChange = (value: string) => {
+  const handleAmountChange = (value) => {
     const cleanedValue = value.replace(",", ".");
 
     if (/^\d*\.?\d{0,2}$/.test(cleanedValue)) {
@@ -199,35 +155,7 @@ export default function EditExpenseScreen() {
     try {
       setSaving(true);
 
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
-
-      if (userError || !user) {
-        Alert.alert(
-          "Session error",
-          "Your session could not be verified. Please log in again.",
-        );
-
-        router.replace("/login");
-        return;
-      }
-
-      const { error } = await supabase
-        .from("expenses")
-        .update({
-          amount: numericAmount,
-          description: description.trim() || null,
-          category_id: categoryId,
-        })
-        .eq("id", id)
-        .eq("user_id", user.id);
-
-      if (error) {
-        Alert.alert("Unable to update expense", error.message);
-        return;
-      }
+      await updateExpense(user.id, id, { amount: numericAmount, description: description.trim(), category: categoryId });
 
       Alert.alert(
         "Expense updated",
@@ -235,7 +163,7 @@ export default function EditExpenseScreen() {
         [
           {
             text: "OK",
-            onPress: () => router.back(),
+            onPress: () => navigation.goBack(),
           },
         ],
       );
@@ -308,7 +236,7 @@ export default function EditExpenseScreen() {
           <View className="mb-6 flex-row items-center">
             <TouchableOpacity
               className="mr-3 h-12 w-12 items-center justify-center rounded-2xl border border-[#E3EDF8] bg-white"
-              onPress={() => router.back()}
+              onPress={() => navigation.goBack()}
               disabled={saving}
               activeOpacity={0.8}
               accessibilityRole="button"

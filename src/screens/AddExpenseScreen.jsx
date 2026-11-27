@@ -13,19 +13,19 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { supabase } from "../../lib/supabase";
+import { useAuth } from "../context/AuthContext";
+import { getExpenses, getExpenseById, addExpense, updateExpense, deleteExpense } from "../storage/expenseStorage";
+import { getMonthlyBudget, saveMonthlyBudget } from "../storage/budgetStorage";
+import { getCategoryOptions, toScreenExpense } from "../utils/finance";
 
-type Category = {
-  id: string;
-  name: string;
-  icon: string | null;
-};
 
 export default function AddExpenseScreen() {
+  const navigation = useNavigation();
+  const { user } = useAuth();
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [categoryId, setCategoryId] = useState("");
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [categories, setCategories] = useState([]);
   const [loadingCategories, setLoadingCategories] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -37,17 +37,7 @@ export default function AddExpenseScreen() {
     try {
       setLoadingCategories(true);
 
-      const { data, error } = await supabase
-        .from("categories")
-        .select("id, name, icon")
-        .order("created_at", { ascending: true });
-
-      if (error) {
-        Alert.alert("Unable to load categories", error.message);
-        return;
-      }
-
-      setCategories(data ?? []);
+      setCategories(await getCategoryOptions(user.id));
     } catch (error) {
       console.error("Unexpected error loading categories:", error);
 
@@ -70,7 +60,7 @@ export default function AddExpenseScreen() {
     return `${year}-${month}-${day}`;
   };
 
-  const handleAmountChange = (value: string) => {
+  const handleAmountChange = (value) => {
     // Allow numbers with a maximum of two decimal places.
     const cleanedValue = value.replace(",", ".");
 
@@ -106,31 +96,7 @@ export default function AddExpenseScreen() {
     try {
       setSaving(true);
 
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
-
-      if (userError || !user) {
-        Alert.alert(
-          "Session error",
-          "Your session could not be verified. Please log in again.",
-        );
-        return;
-      }
-
-      const { error } = await supabase.from("expenses").insert({
-        user_id: user.id,
-        category_id: categoryId,
-        amount: numericAmount,
-        description: description.trim() || null,
-        expense_date: getLocalDate(),
-      });
-
-      if (error) {
-        Alert.alert("Unable to save expense", error.message);
-        return;
-      }
+      await addExpense(user.id, { amount: numericAmount, category: categoryId, description: description.trim(), date: getLocalDate() });
 
       setAmount("");
       setDescription("");

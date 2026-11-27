@@ -1,3 +1,5 @@
+import BudgetBackground from "../components/BudgetBackground";
+import { formatCurrency } from "../utils/formatCurrency";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute, useFocusEffect } from "@react-navigation/native";
 import { useCallback, useMemo, useState } from "react";
@@ -11,6 +13,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  StyleSheet,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -18,13 +21,6 @@ import { useAuth } from "../context/AuthContext";
 import { getExpenses, getExpenseById, addExpense, updateExpense, deleteExpense } from "../storage/expenseStorage";
 import { getMonthlyBudget, saveMonthlyBudget } from "../storage/budgetStorage";
 import { getCategoryOptions, toScreenExpense } from "../utils/finance";
-
-const formatCurrency = (value) => {
-  return `₱${value.toLocaleString("en-PH", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
-};
 
 export default function BudgetScreen() {
   const navigation = useNavigation();
@@ -145,63 +141,37 @@ export default function BudgetScreen() {
 
   return (
     <SafeAreaView
-      style={{
-        flex: 1,
-        backgroundColor: "#F4F9FF",
-      }}
+      style={styles.layout}
       edges={["top", "left", "right"]}
     >
-      {/* Background decorations */}
-      <View
-        pointerEvents="none"
-        className="absolute -left-28 -top-24 h-72 w-72 rounded-full bg-[#D8EAFE]"
-      />
-
-      <View
-        pointerEvents="none"
-        className="absolute -right-40 top-44 h-80 w-80 rounded-full bg-[#E4F0FF]"
-      />
-
-      <View
-        pointerEvents="none"
-        className="absolute -bottom-44 -left-28 h-80 w-80 rounded-full bg-[#D9EAFF]"
-      />
-
+      <BudgetBackground />
       <KeyboardAvoidingView
-        style={{ flex: 1 }}
+        style={styles.hero3}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         <ScrollView
-          style={{ flex: 1 }}
-          contentContainerStyle={{
-            flexGrow: 1,
-            paddingHorizontal: 20,
-            paddingTop: 20,
-            paddingBottom: 40,
-          }}
+          style={styles.hero3}
+          contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
           {/* Top brand row */}
-          <View className="mb-7 flex-row items-center justify-between">
-            <View className="flex-row items-center">
-              <View className="mr-3 h-12 w-12 items-center justify-center rounded-2xl bg-[#1677F2]">
+          <View style={styles.topBrandRow}>
+            <View style={styles.topBrandRow2}>
+              <View style={styles.topBrandRow3}>
                 <Ionicons name="wallet" size={25} color="#FFFFFF" />
               </View>
-
               <View>
-                <Text className="text-[24px] font-extrabold text-[#071B46]">
+                <Text style={styles.topBrandRow4}>
                   PesoTrack
                 </Text>
-
-                <Text className="mt-0.5 text-sm text-[#66758D]">
+                <Text style={styles.topBrandRow5}>
                   Plan today. Build tomorrow.
                 </Text>
               </View>
             </View>
-
             <TouchableOpacity
-              className="h-12 w-12 items-center justify-center rounded-full border border-[#E3EDF8] bg-white"
+              style={styles.topBrandRow6}
               onPress={() => navigation.navigate("Settings")}
               activeOpacity={0.8}
               accessibilityRole="button"
@@ -212,44 +182,39 @@ export default function BudgetScreen() {
           </View>
 
           {/* Hero */}
-          <View className="mb-7">
-            <View className="flex-row items-center">
-              <View className="mr-4 h-[74px] w-[74px] items-center justify-center rounded-[24px] bg-[#EAF3FF]">
+          <View style={styles.hero}>
+            <View style={styles.topBrandRow2}>
+              <View style={styles.hero2}>
                 <Ionicons name="cash-outline" size={38} color="#1677F2" />
               </View>
-
-              <View className="flex-1">
-                <Text className="text-[38px] font-extrabold leading-[42px] text-[#071B46]">
+              <View style={styles.hero3}>
+                <Text style={styles.hero4}>
                   Monthly
                 </Text>
-
-                <Text className="text-[38px] font-extrabold leading-[42px] text-[#1677F2]">
+                <Text style={styles.hero5}>
                   Budget
                 </Text>
               </View>
             </View>
-
-            <Text className="mt-5 max-w-[310px] text-[17px] leading-7 text-[#586A84]">
+            <Text style={styles.hero6}>
               Set how much you want to spend this month.
             </Text>
           </View>
 
           {/* Budget card */}
-          <View className="rounded-[28px] border border-[#E0EBF6] bg-white p-6">
-            <View className="mb-5 flex-row items-center justify-between">
-              <View className="flex-row items-center">
-                <View className="mr-3 h-12 w-12 items-center justify-center rounded-full bg-[#DDEEFF]">
-                  <Text className="text-[27px] font-extrabold text-[#12305D]">
+          <View style={styles.budgetCard}>
+            <View style={styles.budgetCard2}>
+              <View style={styles.topBrandRow2}>
+                <View style={styles.budgetCard3}>
+                  <Text style={styles.budgetCard4}>
                     ₱
                   </Text>
                 </View>
-
                 <View>
-                  <Text className="text-[22px] font-extrabold text-[#071B46]">
+                  <Text style={styles.budgetCard5}>
                     Budget Amount
                   </Text>
-
-                  <Text className="mt-0.5 text-xs text-[#718096]">
+                  <Text style={styles.budgetCard6}>
                     {currentMonthLabel}
                   </Text>
                 </View>
@@ -257,29 +222,20 @@ export default function BudgetScreen() {
             </View>
 
             {loadingBudget ? (
-              <View className="min-h-[72px] items-center justify-center rounded-2xl border border-[#D7E5F4] bg-[#F8FBFF]">
+              <View style={styles.budgetCard7}>
                 <ActivityIndicator size="small" color="#1677F2" />
-
-                <Text className="mt-2 text-xs text-[#718096]">
+                <Text style={styles.budgetCard8}>
                   Loading budget...
                 </Text>
               </View>
             ) : (
-              <View className="flex-row items-center rounded-2xl border border-[#D7E5F4] bg-[#F8FBFF] px-4">
-                <Text className="mr-3 text-[25px] font-bold text-[#56667D]">
+              <View style={styles.budgetCard9}>
+                <Text style={styles.budgetCard10}>
                   ₱
                 </Text>
-
-                <View className="mr-3 h-8 w-px bg-[#DCE8F5]" />
-
+                <View style={styles.budgetCard11} />
                 <TextInput
-                  style={{
-                    flex: 1,
-                    minHeight: 68,
-                    color: "#071B46",
-                    fontSize: 23,
-                    fontWeight: "600",
-                  }}
+                  style={styles.layout2}
                   value={budget}
                   onChangeText={handleBudgetChange}
                   keyboardType="decimal-pad"
@@ -293,15 +249,11 @@ export default function BudgetScreen() {
                 />
               </View>
             )}
-
-            <Text className="mt-3 text-xs leading-5 text-[#8794A8]">
+            <Text style={styles.budgetCard12}>
               Enter 0 if you do not want to set a spending limit for this month.
             </Text>
-
             <TouchableOpacity
-              className={`mt-5 min-h-[58px] flex-row items-center justify-center rounded-2xl ${
-                saving || loadingBudget ? "bg-[#7CB3F8]" : "bg-[#1677F2]"
-              }`}
+              style={[styles.budgetCard13, saving || loadingBudget ? styles.budgetCardState : styles.budgetCardState2]}
               onPress={handleSave}
               disabled={saving || loadingBudget}
               activeOpacity={0.85}
@@ -311,19 +263,16 @@ export default function BudgetScreen() {
               {saving ? (
                 <>
                   <ActivityIndicator size="small" color="#FFFFFF" />
-
-                  <Text className="ml-3 text-base font-extrabold text-white">
+                  <Text style={styles.budgetCard14}>
                     Saving...
                   </Text>
                 </>
               ) : (
                 <>
                   <Ionicons name="save-outline" size={22} color="#FFFFFF" />
-
-                  <Text className="mx-3 text-base font-extrabold text-white">
+                  <Text style={styles.budgetCard15}>
                     Save Budget
                   </Text>
-
                   <Ionicons name="arrow-forward" size={22} color="#FFFFFF" />
                 </>
               )}
@@ -331,15 +280,13 @@ export default function BudgetScreen() {
           </View>
 
           {/* Tip */}
-          <View className="mt-5 flex-row items-start rounded-[22px] bg-[#EAF4FF] p-4">
-            <View className="mr-3 mt-0.5 h-9 w-9 items-center justify-center rounded-full bg-white">
+          <View style={styles.tip}>
+            <View style={styles.tip2}>
               <Ionicons name="bulb-outline" size={20} color="#1677F2" />
             </View>
-
-            <View className="flex-1">
-              <Text className="font-bold text-[#17335F]">Budget tip</Text>
-
-              <Text className="mt-1 text-sm leading-5 text-[#66758D]">
+            <View style={styles.hero3}>
+              <Text style={styles.tip3}>Budget tip</Text>
+              <Text style={styles.tip4}>
                 Choose an amount that covers your regular expenses while leaving
                 room for savings and unexpected costs.
               </Text>
@@ -350,3 +297,43 @@ export default function BudgetScreen() {
     </SafeAreaView>
   );
 }
+
+// UI styles: edit these values during visual debugging.
+const styles = StyleSheet.create({
+  topBrandRow: {marginBottom: 28, flexDirection: "row", alignItems: "center", justifyContent: "space-between"},
+  topBrandRow2: {flexDirection: "row", alignItems: "center"},
+  topBrandRow3: {marginRight: 12, height: 48, width: 48, alignItems: "center", justifyContent: "center", borderRadius: 16, backgroundColor: "#1677F2"},
+  topBrandRow4: {fontSize: 24, fontWeight: "800", color: "#071B46"},
+  topBrandRow5: {marginTop: 2, fontSize: 14, lineHeight: 20, color: "#66758D"},
+  topBrandRow6: {height: 48, width: 48, alignItems: "center", justifyContent: "center", borderRadius: 9999, borderWidth: 1, borderColor: "#E3EDF8", backgroundColor: "#FFFFFF"},
+  hero: {marginBottom: 28},
+  hero2: {marginRight: 16, height: 74, width: 74, alignItems: "center", justifyContent: "center", borderRadius: 24, backgroundColor: "#EAF3FF"},
+  hero3: {flex: 1},
+  hero4: {fontSize: 38, fontWeight: "800", lineHeight: 42, color: "#071B46"},
+  hero5: {fontSize: 38, fontWeight: "800", lineHeight: 42, color: "#1677F2"},
+  hero6: {marginTop: 20, maxWidth: 310, fontSize: 17, lineHeight: 28, color: "#586A84"},
+  budgetCard: {borderRadius: 28, borderWidth: 1, borderColor: "#E0EBF6", backgroundColor: "#FFFFFF", padding: 24},
+  budgetCard2: {marginBottom: 20, flexDirection: "row", alignItems: "center", justifyContent: "space-between"},
+  budgetCard3: {marginRight: 12, height: 48, width: 48, alignItems: "center", justifyContent: "center", borderRadius: 9999, backgroundColor: "#DDEEFF"},
+  budgetCard4: {fontSize: 27, fontWeight: "800", color: "#12305D"},
+  budgetCard5: {fontSize: 22, fontWeight: "800", color: "#071B46"},
+  budgetCard6: {marginTop: 2, fontSize: 12, lineHeight: 16, color: "#718096"},
+  budgetCard7: {minHeight: 72, alignItems: "center", justifyContent: "center", borderRadius: 16, borderWidth: 1, borderColor: "#D7E5F4", backgroundColor: "#F8FBFF"},
+  budgetCard8: {marginTop: 8, fontSize: 12, lineHeight: 16, color: "#718096"},
+  budgetCard9: {flexDirection: "row", alignItems: "center", borderRadius: 16, borderWidth: 1, borderColor: "#D7E5F4", backgroundColor: "#F8FBFF", paddingHorizontal: 16},
+  budgetCard10: {marginRight: 12, fontSize: 25, fontWeight: "700", color: "#56667D"},
+  budgetCard11: {marginRight: 12, height: 32, width: 1, backgroundColor: "#DCE8F5"},
+  budgetCard12: {marginTop: 12, fontSize: 12, lineHeight: 20, color: "#8794A8"},
+  budgetCardState: {backgroundColor: "#7CB3F8"},
+  budgetCardState2: {backgroundColor: "#1677F2"},
+  budgetCard13: {marginTop: 20, minHeight: 58, flexDirection: "row", alignItems: "center", justifyContent: "center", borderRadius: 16},
+  budgetCard14: {marginLeft: 12, fontSize: 16, lineHeight: 24, fontWeight: "800", color: "#FFFFFF"},
+  budgetCard15: {marginHorizontal: 12, fontSize: 16, lineHeight: 24, fontWeight: "800", color: "#FFFFFF"},
+  tip: {marginTop: 20, flexDirection: "row", alignItems: "flex-start", borderRadius: 22, backgroundColor: "#EAF4FF", padding: 16},
+  tip2: {marginRight: 12, marginTop: 2, height: 36, width: 36, alignItems: "center", justifyContent: "center", borderRadius: 9999, backgroundColor: "#FFFFFF"},
+  tip3: {fontWeight: "700", color: "#17335F"},
+  tip4: {marginTop: 4, fontSize: 14, lineHeight: 20, color: "#66758D"},
+  layout: {flex: 1, backgroundColor: "#F4F9FF"},
+  scrollContent: {flexGrow: 1, paddingHorizontal: 20, paddingTop: 20, paddingBottom: 40},
+  layout2: {flex: 1, minHeight: 68, color: "#071B46", fontSize: 23, fontWeight: "600"},
+});

@@ -1,3 +1,4 @@
+import EditExpenseBackground from "../components/EditExpenseBackground";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute, useFocusEffect } from "@react-navigation/native";
 import { useEffect, useMemo, useState } from "react";
@@ -11,6 +12,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  StyleSheet,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -18,8 +20,6 @@ import { useAuth } from "../context/AuthContext";
 import { getExpenses, getExpenseById, addExpense, updateExpense, deleteExpense } from "../storage/expenseStorage";
 import { getMonthlyBudget, saveMonthlyBudget } from "../storage/budgetStorage";
 import { getCategoryOptions, toScreenExpense } from "../utils/finance";
-
-
 
 export default function EditExpenseScreen() {
   const navigation = useNavigation();
@@ -182,16 +182,12 @@ export default function EditExpenseScreen() {
   if (loading) {
     return (
       <SafeAreaView
-        style={{
-          flex: 1,
-          backgroundColor: "#F4F9FF",
-        }}
+        style={styles.layout}
         edges={["top", "left", "right", "bottom"]}
       >
-        <View className="flex-1 items-center justify-center">
+        <View style={styles.screen}>
           <ActivityIndicator size="small" color="#1677F2" />
-
-          <Text className="mt-3 text-sm text-[#718096]">
+          <Text style={styles.screen2}>
             Loading expense...
           </Text>
         </View>
@@ -201,41 +197,24 @@ export default function EditExpenseScreen() {
 
   return (
     <SafeAreaView
-      style={{
-        flex: 1,
-        backgroundColor: "#F4F9FF",
-      }}
+      style={styles.layout}
       edges={["top", "left", "right", "bottom"]}
     >
-      {/* Background decorations */}
-      <View
-        pointerEvents="none"
-        className="absolute -left-28 -top-24 h-72 w-72 rounded-full bg-[#D8EAFE]"
-      />
-
-      <View
-        pointerEvents="none"
-        className="absolute -right-40 top-44 h-80 w-80 rounded-full bg-[#E4F0FF]"
-      />
-
+      <EditExpenseBackground />
       <KeyboardAvoidingView
-        style={{ flex: 1 }}
+        style={styles.header3}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         <ScrollView
-          style={{ flex: 1 }}
-          contentContainerStyle={{
-            paddingHorizontal: 20,
-            paddingTop: 20,
-            paddingBottom: 32,
-          }}
+          style={styles.header3}
+          contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
           {/* Header */}
-          <View className="mb-6 flex-row items-center">
+          <View style={styles.header}>
             <TouchableOpacity
-              className="mr-3 h-12 w-12 items-center justify-center rounded-2xl border border-[#E3EDF8] bg-white"
+              style={styles.header2}
               onPress={() => navigation.goBack()}
               disabled={saving}
               activeOpacity={0.8}
@@ -244,47 +223,35 @@ export default function EditExpenseScreen() {
             >
               <Ionicons name="arrow-back" size={24} color="#1677F2" />
             </TouchableOpacity>
-
-            <View className="flex-1">
-              <Text className="text-[25px] font-extrabold text-[#071B46]">
+            <View style={styles.header3}>
+              <Text style={styles.header4}>
                 Edit Expense
               </Text>
-
-              <Text className="mt-0.5 text-sm text-[#66758D]">
+              <Text style={styles.header5}>
                 Update your expense details
               </Text>
             </View>
           </View>
 
           {/* Amount */}
-          <View className="rounded-[22px] border border-[#E3EDF8] bg-white p-4">
-            <View className="mb-3 flex-row items-center">
-              <View className="mr-3 h-9 w-9 items-center justify-center rounded-full bg-[#EAF3FF]">
-                <Text className="text-[21px] font-extrabold text-[#17335F]">
+          <View style={styles.amount}>
+            <View style={styles.amount2}>
+              <View style={styles.amount3}>
+                <Text style={styles.amount4}>
                   ₱
                 </Text>
               </View>
-
-              <Text className="text-[18px] font-extrabold text-[#071B46]">
+              <Text style={styles.amount5}>
                 Expense Amount
               </Text>
             </View>
-
-            <View className="flex-row items-center rounded-2xl border border-[#D7E5F4] bg-[#F8FBFF] px-4">
-              <Text className="mr-3 text-[24px] font-bold text-[#586A84]">
+            <View style={styles.amount6}>
+              <Text style={styles.amount7}>
                 ₱
               </Text>
-
-              <View className="mr-3 h-7 w-px bg-[#DCE8F5]" />
-
+              <View style={styles.amount8} />
               <TextInput
-                style={{
-                  flex: 1,
-                  minHeight: 54,
-                  color: "#071B46",
-                  fontSize: 22,
-                  fontWeight: "700",
-                }}
+                style={styles.layout2}
                 value={amount}
                 onChangeText={handleAmountChange}
                 placeholder="0.00"
@@ -298,42 +265,38 @@ export default function EditExpenseScreen() {
           </View>
 
           {/* Category */}
-          <View className="mt-5">
-            <View className="mb-3 flex-row items-center">
-              <View className="mr-3 h-10 w-10 items-center justify-center rounded-full bg-[#EEF5FF]">
+          <View style={styles.category}>
+            <View style={styles.amount2}>
+              <View style={styles.category2}>
                 <Ionicons name="grid-outline" size={20} color="#1677F2" />
               </View>
-
-              <Text className="text-[20px] font-extrabold text-[#071B46]">
+              <Text style={styles.category3}>
                 Category
               </Text>
             </View>
 
             {categories.length === 0 ? (
-              <View className="items-center rounded-[22px] border border-[#E3EDF8] bg-white px-5 py-7">
+              <View style={styles.category4}>
                 <Ionicons
                   name="folder-open-outline"
                   size={30}
                   color="#A0AEC0"
                 />
-
-                <Text className="mt-3 text-sm text-[#718096]">
+                <Text style={styles.screen2}>
                   No categories available.
                 </Text>
               </View>
             ) : (
-              <View className="flex-row flex-wrap justify-between">
+              <View style={styles.category5}>
                 {categories.map((category) => {
                   const selected = categoryId === category.id;
 
                   return (
                     <TouchableOpacity
                       key={category.id}
-                      className={`mb-2 w-[48%] rounded-[18px] border px-3 py-2.5 ${
-                        selected
-                          ? "border-[#1677F2] bg-[#1677F2]"
-                          : "border-[#E3EDF8] bg-white"
-                      }`}
+                      style={[styles.category6, selected
+                          ? styles.categoryState
+                          : styles.categoryState2]}
                       onPress={() => setCategoryId(category.id)}
                       disabled={saving}
                       activeOpacity={0.85}
@@ -345,31 +308,25 @@ export default function EditExpenseScreen() {
                       }}
                     >
                       <View
-                        className={`h-10 w-10 items-center justify-center rounded-full ${
-                          selected ? "bg-white/15" : "bg-[#F5F9FF]"
-                        }`}
+                        style={[styles.category7, selected ? styles.categoryState3 : styles.categoryState4]}
                       >
-                        <Text className="text-xl">{category.icon ?? "📁"}</Text>
+                        <Text style={styles.category8}>{category.icon ?? "📁"}</Text>
                       </View>
-
                       <Text
                         numberOfLines={1}
-                        className={`mt-1.5 text-sm font-extrabold ${
-                          selected ? "text-white" : "text-[#071B46]"
-                        }`}
+                        style={[styles.category9, selected ? styles.categoryState5 : styles.categoryState6]}
                       >
                         {category.name}
                       </Text>
 
                       {selected && (
-                        <View className="mt-1 flex-row items-center">
+                        <View style={styles.category10}>
                           <Ionicons
                             name="checkmark-circle"
                             size={14}
                             color="#FFFFFF"
                           />
-
-                          <Text className="ml-1 text-xs font-medium text-white/90">
+                          <Text style={styles.category11}>
                             Selected
                           </Text>
                         </View>
@@ -382,27 +339,19 @@ export default function EditExpenseScreen() {
           </View>
 
           {/* Description */}
-          <View className="mt-4">
-            <View className="mb-3 flex-row items-center">
-              <View className="mr-3 h-10 w-10 items-center justify-center rounded-full bg-[#EEF5FF]">
+          <View style={styles.description}>
+            <View style={styles.amount2}>
+              <View style={styles.category2}>
                 <Ionicons name="create-outline" size={20} color="#1677F2" />
               </View>
-
-              <Text className="text-[20px] font-extrabold text-[#071B46]">
+              <Text style={styles.category3}>
                 Description
               </Text>
-
-              <Text className="ml-2 text-xs text-[#94A3B8]">Optional</Text>
+              <Text style={styles.description2}>Optional</Text>
             </View>
-
-            <View className="rounded-[22px] border border-[#E3EDF8] bg-white p-4">
+            <View style={styles.amount}>
               <TextInput
-                style={{
-                  minHeight: 72,
-                  color: "#071B46",
-                  fontSize: 16,
-                  lineHeight: 23,
-                }}
+                style={styles.layout3}
                 value={description}
                 onChangeText={setDescription}
                 placeholder="What did you spend on?"
@@ -413,8 +362,7 @@ export default function EditExpenseScreen() {
                 maxLength={150}
                 accessibilityLabel="Expense description"
               />
-
-              <Text className="mt-2 text-right text-xs text-[#94A3B8]">
+              <Text style={styles.description3}>
                 {description.length}/150
               </Text>
             </View>
@@ -424,13 +372,11 @@ export default function EditExpenseScreen() {
           <TouchableOpacity
             disabled={saving || !hasChanges}
             onPress={handleSave}
-            className={`mt-5 min-h-[56px] flex-row items-center justify-center rounded-2xl ${
-              saving
-                ? "bg-[#7CB3F8]"
+            style={[styles.save, saving
+                ? styles.saveState
                 : hasChanges
-                  ? "bg-[#1677F2]"
-                  : "bg-[#B7D3F7]"
-            }`}
+                  ? styles.saveState2
+                  : styles.saveState3]}
             activeOpacity={0.85}
             accessibilityRole="button"
             accessibilityLabel="Save expense changes"
@@ -441,8 +387,7 @@ export default function EditExpenseScreen() {
             {saving ? (
               <>
                 <ActivityIndicator size="small" color="#FFFFFF" />
-
-                <Text className="ml-3 text-base font-extrabold text-white">
+                <Text style={styles.save2}>
                   Saving...
                 </Text>
               </>
@@ -455,8 +400,7 @@ export default function EditExpenseScreen() {
                   size={21}
                   color="#FFFFFF"
                 />
-
-                <Text className="mx-3 text-base font-extrabold text-white">
+                <Text style={styles.save3}>
                   {hasChanges ? "Save Changes" : "No Changes"}
                 </Text>
 
@@ -471,3 +415,52 @@ export default function EditExpenseScreen() {
     </SafeAreaView>
   );
 }
+
+// UI styles: edit these values during visual debugging.
+const styles = StyleSheet.create({
+  screen: {flex: 1, alignItems: "center", justifyContent: "center"},
+  screen2: {marginTop: 12, fontSize: 14, lineHeight: 20, color: "#718096"},
+  header: {marginBottom: 24, flexDirection: "row", alignItems: "center"},
+  header2: {marginRight: 12, height: 48, width: 48, alignItems: "center", justifyContent: "center", borderRadius: 16, borderWidth: 1, borderColor: "#E3EDF8", backgroundColor: "#FFFFFF"},
+  header3: {flex: 1},
+  header4: {fontSize: 25, fontWeight: "800", color: "#071B46"},
+  header5: {marginTop: 2, fontSize: 14, lineHeight: 20, color: "#66758D"},
+  amount: {borderRadius: 22, borderWidth: 1, borderColor: "#E3EDF8", backgroundColor: "#FFFFFF", padding: 16},
+  amount2: {marginBottom: 12, flexDirection: "row", alignItems: "center"},
+  amount3: {marginRight: 12, height: 36, width: 36, alignItems: "center", justifyContent: "center", borderRadius: 9999, backgroundColor: "#EAF3FF"},
+  amount4: {fontSize: 21, fontWeight: "800", color: "#17335F"},
+  amount5: {fontSize: 18, fontWeight: "800", color: "#071B46"},
+  amount6: {flexDirection: "row", alignItems: "center", borderRadius: 16, borderWidth: 1, borderColor: "#D7E5F4", backgroundColor: "#F8FBFF", paddingHorizontal: 16},
+  amount7: {marginRight: 12, fontSize: 24, fontWeight: "700", color: "#586A84"},
+  amount8: {marginRight: 12, height: 28, width: 1, backgroundColor: "#DCE8F5"},
+  category: {marginTop: 20},
+  category2: {marginRight: 12, height: 40, width: 40, alignItems: "center", justifyContent: "center", borderRadius: 9999, backgroundColor: "#EEF5FF"},
+  category3: {fontSize: 20, fontWeight: "800", color: "#071B46"},
+  category4: {alignItems: "center", borderRadius: 22, borderWidth: 1, borderColor: "#E3EDF8", backgroundColor: "#FFFFFF", paddingHorizontal: 20, paddingVertical: 28},
+  category5: {flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between"},
+  categoryState: {borderColor: "#1677F2", backgroundColor: "#1677F2"},
+  categoryState2: {borderColor: "#E3EDF8", backgroundColor: "#FFFFFF"},
+  category6: {marginBottom: 8, width: "48%", borderRadius: 18, borderWidth: 1, paddingHorizontal: 12, paddingVertical: 10},
+  categoryState3: {backgroundColor: "rgba(255, 255, 255, 0.15)"},
+  categoryState4: {backgroundColor: "#F5F9FF"},
+  category7: {height: 40, width: 40, alignItems: "center", justifyContent: "center", borderRadius: 9999},
+  category8: {fontSize: 20, lineHeight: 28},
+  categoryState5: {color: "#FFFFFF"},
+  categoryState6: {color: "#071B46"},
+  category9: {marginTop: 6, fontSize: 14, lineHeight: 20, fontWeight: "800"},
+  category10: {marginTop: 4, flexDirection: "row", alignItems: "center"},
+  category11: {marginLeft: 4, fontSize: 12, lineHeight: 16, fontWeight: "500", color: "rgba(255, 255, 255, 0.9)"},
+  description: {marginTop: 16},
+  description2: {marginLeft: 8, fontSize: 12, lineHeight: 16, color: "#94A3B8"},
+  description3: {marginTop: 8, textAlign: "right", fontSize: 12, lineHeight: 16, color: "#94A3B8"},
+  saveState: {backgroundColor: "#7CB3F8"},
+  saveState2: {backgroundColor: "#1677F2"},
+  saveState3: {backgroundColor: "#B7D3F7"},
+  save: {marginTop: 20, minHeight: 56, flexDirection: "row", alignItems: "center", justifyContent: "center", borderRadius: 16},
+  save2: {marginLeft: 12, fontSize: 16, lineHeight: 24, fontWeight: "800", color: "#FFFFFF"},
+  save3: {marginHorizontal: 12, fontSize: 16, lineHeight: 24, fontWeight: "800", color: "#FFFFFF"},
+  layout: {flex: 1, backgroundColor: "#F4F9FF"},
+  scrollContent: {paddingHorizontal: 20, paddingTop: 20, paddingBottom: 32},
+  layout2: {flex: 1, minHeight: 54, color: "#071B46", fontSize: 22, fontWeight: "700"},
+  layout3: {minHeight: 72, color: "#071B46", fontSize: 16, lineHeight: 23},
+});

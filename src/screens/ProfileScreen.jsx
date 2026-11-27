@@ -1,3 +1,4 @@
+import ProfileBackground from "../components/ProfileBackground";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute, useFocusEffect } from "@react-navigation/native";
 import { useEffect, useState } from "react";
@@ -11,6 +12,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  StyleSheet,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -127,16 +129,12 @@ export default function ProfileScreen() {
   if (loading) {
     return (
       <SafeAreaView
-        style={{
-          flex: 1,
-          backgroundColor: "#F4F9FF",
-        }}
+        style={styles.layout}
         edges={["top", "left", "right", "bottom"]}
       >
-        <View className="flex-1 items-center justify-center">
+        <View style={styles.screen}>
           <ActivityIndicator size="small" color="#1677F2" />
-
-          <Text className="mt-3 text-sm text-[#718096]">
+          <Text style={styles.screen2}>
             Loading profile...
           </Text>
         </View>
@@ -148,41 +146,24 @@ export default function ProfileScreen() {
 
   return (
     <SafeAreaView
-      style={{
-        flex: 1,
-        backgroundColor: "#F4F9FF",
-      }}
+      style={styles.layout}
       edges={["top", "left", "right", "bottom"]}
     >
-      {/* Background decorations */}
-      <View
-        pointerEvents="none"
-        className="absolute -left-28 -top-24 h-72 w-72 rounded-full bg-[#D8EAFE]"
-      />
-
-      <View
-        pointerEvents="none"
-        className="absolute -right-36 top-40 h-80 w-80 rounded-full bg-[#E4F0FF]"
-      />
-
+      <ProfileBackground />
       <KeyboardAvoidingView
-        style={{ flex: 1 }}
+        style={styles.header3}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         <ScrollView
-          style={{ flex: 1 }}
-          contentContainerStyle={{
-            paddingHorizontal: 20,
-            paddingTop: 20,
-            paddingBottom: 40,
-          }}
+          style={styles.header3}
+          contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
           {/* Header */}
-          <View className="mb-7 flex-row items-center">
+          <View style={styles.header}>
             <TouchableOpacity
-              className="mr-3 h-12 w-12 items-center justify-center rounded-2xl border border-[#E3EDF8] bg-white"
+              style={styles.header2}
               onPress={() => navigation.goBack()}
               activeOpacity={0.8}
               accessibilityRole="button"
@@ -190,79 +171,58 @@ export default function ProfileScreen() {
             >
               <Ionicons name="arrow-back" size={24} color="#1677F2" />
             </TouchableOpacity>
-
-            <View className="flex-1">
-              <Text className="text-[26px] font-extrabold text-[#071B46]">
+            <View style={styles.header3}>
+              <Text style={styles.header4}>
                 My Profile
               </Text>
-
-              <Text className="mt-0.5 text-sm text-[#66758D]">
+              <Text style={styles.header5}>
                 Manage your account information
               </Text>
             </View>
           </View>
 
           {/* Profile summary */}
-          <View className="mb-5 items-center rounded-[26px] border border-[#E3EDF8] bg-white p-5">
-            <View className="h-20 w-20 items-center justify-center rounded-full bg-[#EAF3FF]">
+          <View style={styles.profileSummary}>
+            <View style={styles.profileSummary2}>
               <Ionicons name="person" size={38} color="#1677F2" />
             </View>
-
             <Text
               numberOfLines={1}
               adjustsFontSizeToFit
-              className="mt-4 max-w-full text-[22px] font-extrabold text-[#071B46]"
+              style={styles.profileSummary3}
             >
               {fullName.trim() || "PesoTrack User"}
             </Text>
-
             <Text
               numberOfLines={1}
-              className="mt-1 max-w-full text-sm text-[#718096]"
+              style={styles.profileSummary4}
             >
               {email || "No email available"}
             </Text>
           </View>
 
           {/* Form */}
-          <View className="rounded-[26px] border border-[#E3EDF8] bg-white p-5">
+          <View style={styles.form}>
             {/* Email */}
-            <Text className="mb-2 text-sm font-bold text-[#17335F]">Email</Text>
-
-            <View className="mb-5 flex-row items-center rounded-2xl border border-[#D7E5F4] bg-[#F3F6FA] px-4">
+            <Text style={styles.email}>Email</Text>
+            <View style={styles.email2}>
               <Ionicons name="mail-outline" size={21} color="#8AA0BB" />
-
-              <View className="mx-3 h-7 w-px bg-[#DCE8F5]" />
-
+              <View style={styles.email3} />
               <TextInput
-                style={{
-                  flex: 1,
-                  minHeight: 54,
-                  color: "#66758D",
-                  fontSize: 16,
-                }}
+                style={styles.layout2}
                 value={email}
                 editable={false}
                 accessibilityLabel="Email address"
               />
             </View>
-
-            <Text className="mb-2 text-sm font-bold text-[#17335F]">
+            <Text style={styles.email}>
               Full Name
             </Text>
-
-            <View className="flex-row items-center rounded-2xl border border-[#D7E5F4] bg-[#F8FBFF] px-4">
+            <View style={styles.email4}>
               <Ionicons name="person-outline" size={21} color="#6EA8F4" />
-
-              <View className="mx-3 h-7 w-px bg-[#DCE8F5]" />
-
+              <View style={styles.email3} />
               <TextInput
-                style={{
-                  flex: 1,
-                  minHeight: 54,
-                  color: "#071B46",
-                  fontSize: 16,
-                }}
+                style={styles.layout3}
                 placeholder="Enter your full name"
                 placeholderTextColor="#A0AEC0"
                 value={fullName}
@@ -276,20 +236,17 @@ export default function ProfileScreen() {
                 accessibilityLabel="Full name"
               />
             </View>
-
-            <Text className="mt-2 text-right text-xs text-[#94A3B8]">
+            <Text style={styles.email5}>
               {fullName.length}/80
             </Text>
 
             {/* Save */}
             <TouchableOpacity
-              className={`mt-5 min-h-[56px] flex-row items-center justify-center rounded-2xl ${
-                saving
-                  ? "bg-[#7CB3F8]"
+              style={[styles.save, saving
+                  ? styles.saveState
                   : hasChanges
-                    ? "bg-[#1677F2]"
-                    : "bg-[#B7D3F7]"
-              }`}
+                    ? styles.saveState2
+                    : styles.saveState3]}
               onPress={handleSave}
               disabled={saving || !hasChanges}
               activeOpacity={0.85}
@@ -302,27 +259,23 @@ export default function ProfileScreen() {
               {saving ? (
                 <>
                   <ActivityIndicator size="small" color="#FFFFFF" />
-
-                  <Text className="ml-3 text-base font-extrabold text-white">
+                  <Text style={styles.save2}>
                     Saving...
                   </Text>
                 </>
               ) : (
                 <>
                   <Ionicons name="save-outline" size={21} color="#FFFFFF" />
-
-                  <Text className="mx-3 text-base font-extrabold text-white">
+                  <Text style={styles.save3}>
                     {hasChanges ? "Save Changes" : "Saved"}
                   </Text>
-
                   <Ionicons name="checkmark" size={21} color="#FFFFFF" />
                 </>
               )}
             </TouchableOpacity>
           </View>
-
-          <View className="mt-6 items-center">
-            <Text className="text-sm font-medium italic text-[#79A9DB]">
+          <View style={styles.save4}>
+            <Text style={styles.save5}>
               Better habits. Brighter future.
             </Text>
           </View>
@@ -331,3 +284,36 @@ export default function ProfileScreen() {
     </SafeAreaView>
   );
 }
+
+// UI styles: edit these values during visual debugging.
+const styles = StyleSheet.create({
+  screen: {flex: 1, alignItems: "center", justifyContent: "center"},
+  screen2: {marginTop: 12, fontSize: 14, lineHeight: 20, color: "#718096"},
+  header: {marginBottom: 28, flexDirection: "row", alignItems: "center"},
+  header2: {marginRight: 12, height: 48, width: 48, alignItems: "center", justifyContent: "center", borderRadius: 16, borderWidth: 1, borderColor: "#E3EDF8", backgroundColor: "#FFFFFF"},
+  header3: {flex: 1},
+  header4: {fontSize: 26, fontWeight: "800", color: "#071B46"},
+  header5: {marginTop: 2, fontSize: 14, lineHeight: 20, color: "#66758D"},
+  profileSummary: {marginBottom: 20, alignItems: "center", borderRadius: 26, borderWidth: 1, borderColor: "#E3EDF8", backgroundColor: "#FFFFFF", padding: 20},
+  profileSummary2: {height: 80, width: 80, alignItems: "center", justifyContent: "center", borderRadius: 9999, backgroundColor: "#EAF3FF"},
+  profileSummary3: {marginTop: 16, maxWidth: "100%", fontSize: 22, fontWeight: "800", color: "#071B46"},
+  profileSummary4: {marginTop: 4, maxWidth: "100%", fontSize: 14, lineHeight: 20, color: "#718096"},
+  form: {borderRadius: 26, borderWidth: 1, borderColor: "#E3EDF8", backgroundColor: "#FFFFFF", padding: 20},
+  email: {marginBottom: 8, fontSize: 14, lineHeight: 20, fontWeight: "700", color: "#17335F"},
+  email2: {marginBottom: 20, flexDirection: "row", alignItems: "center", borderRadius: 16, borderWidth: 1, borderColor: "#D7E5F4", backgroundColor: "#F3F6FA", paddingHorizontal: 16},
+  email3: {marginHorizontal: 12, height: 28, width: 1, backgroundColor: "#DCE8F5"},
+  email4: {flexDirection: "row", alignItems: "center", borderRadius: 16, borderWidth: 1, borderColor: "#D7E5F4", backgroundColor: "#F8FBFF", paddingHorizontal: 16},
+  email5: {marginTop: 8, textAlign: "right", fontSize: 12, lineHeight: 16, color: "#94A3B8"},
+  saveState: {backgroundColor: "#7CB3F8"},
+  saveState2: {backgroundColor: "#1677F2"},
+  saveState3: {backgroundColor: "#B7D3F7"},
+  save: {marginTop: 20, minHeight: 56, flexDirection: "row", alignItems: "center", justifyContent: "center", borderRadius: 16},
+  save2: {marginLeft: 12, fontSize: 16, lineHeight: 24, fontWeight: "800", color: "#FFFFFF"},
+  save3: {marginHorizontal: 12, fontSize: 16, lineHeight: 24, fontWeight: "800", color: "#FFFFFF"},
+  save4: {marginTop: 24, alignItems: "center"},
+  save5: {fontSize: 14, lineHeight: 20, fontWeight: "500", fontStyle: "italic", color: "#79A9DB"},
+  layout: {flex: 1, backgroundColor: "#F4F9FF"},
+  scrollContent: {paddingHorizontal: 20, paddingTop: 20, paddingBottom: 40},
+  layout2: {flex: 1, minHeight: 54, color: "#66758D", fontSize: 16},
+  layout3: {flex: 1, minHeight: 54, color: "#071B46", fontSize: 16},
+});

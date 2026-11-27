@@ -1,3 +1,4 @@
+import SignupBackground from "../components/SignupBackground";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute, useFocusEffect } from "@react-navigation/native";
 import { useState } from "react";
@@ -10,6 +11,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  StyleSheet,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -74,60 +76,37 @@ export default function SignupScreen() {
 
   return (
     <SafeAreaView
-      style={{ flex: 1, backgroundColor: "#F4F9FF" }}
+      style={styles.layout}
       edges={["top", "left", "right", "bottom"]}
     >
-      {/* Background decorations */}
-      <View
-        pointerEvents="none"
-        className="absolute -left-28 -top-24 h-72 w-72 rounded-full bg-[#D8EAFE]"
-      />
-
-      <View
-        pointerEvents="none"
-        className="absolute -right-36 top-52 h-80 w-80 rounded-full bg-[#E4F0FF]"
-      />
-
-      <View
-        pointerEvents="none"
-        className="absolute -bottom-40 -left-24 h-80 w-80 rounded-full bg-[#D9EAFF]"
-      />
-
+      <SignupBackground />
       <KeyboardAvoidingView
-        style={{ flex: 1 }}
+        style={styles.pesotrackBranding4}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         <ScrollView
-          style={{ flex: 1 }}
-          contentContainerStyle={{
-            flexGrow: 1,
-            paddingHorizontal: 24,
-            paddingTop: 32,
-            paddingBottom: 64,
-          }}
+          style={styles.pesotrackBranding4}
+          contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
           bounces={false}
         >
           {/* PesoTrack branding */}
-          <View className="mb-5">
-            <View className="flex-row items-center">
-              <View className="mr-4 h-[68px] w-[68px] items-center justify-center rounded-[22px] bg-[#1677F2]">
+          <View style={styles.pesotrackBranding}>
+            <View style={styles.pesotrackBranding2}>
+              <View style={styles.pesotrackBranding3}>
                 <Ionicons name="wallet" size={36} color="#FFFFFF" />
               </View>
-
-              <View className="flex-1">
-                <View className="flex-row flex-wrap items-baseline">
-                  <Text className="text-[36px] font-extrabold tracking-tight text-[#071B46]">
+              <View style={styles.pesotrackBranding4}>
+                <View style={styles.pesotrackBranding5}>
+                  <Text style={styles.pesotrackBranding6}>
                     Peso
                   </Text>
-
-                  <Text className="text-[36px] font-extrabold tracking-tight text-[#1677F2]">
+                  <Text style={styles.pesotrackBranding7}>
                     Track
                   </Text>
                 </View>
-
-                <Text className="mt-1 text-[15px] text-[#65758B]">
+                <Text style={styles.pesotrackBranding8}>
                   Start building better money habits.
                 </Text>
               </View>
@@ -135,32 +114,23 @@ export default function SignupScreen() {
           </View>
 
           {/* Signup card */}
-          <View className="rounded-[28px] border border-[#E0EBF6] bg-white px-6 py-6">
-            <View className="mb-7">
-              <Text className="text-[31px] font-extrabold text-[#071B46]">
+          <View style={styles.signupCard}>
+            <View style={styles.signupCard2}>
+              <Text style={styles.signupCard3}>
                 Create account
               </Text>
-
-              <Text className="mt-2 text-[15px] leading-6 text-[#718096]">
+              <Text style={styles.signupCard4}>
                 Create your PesoTrack account and start managing your budget.
               </Text>
             </View>
 
             {/* Full Name */}
-            <Text className="mb-2 text-sm font-bold text-[#17335F]">Full Name</Text>
-
-            <View className="mb-5 flex-row items-center rounded-2xl border border-[#D7E5F4] bg-[#F8FBFF] px-4">
+            <Text style={styles.fullName}>Full Name</Text>
+            <View style={styles.fullName2}>
               <Ionicons name="person-outline" size={21} color="#6EA8F4" />
-
-              <View className="mx-3 h-7 w-px bg-[#DCE8F5]" />
-
+              <View style={styles.fullName3} />
               <TextInput
-                style={{
-                  flex: 1,
-                  minHeight: 56,
-                  color: "#071B46",
-                  fontSize: 16,
-                }}
+                style={styles.layout2}
                 placeholder="Enter your full name"
                 placeholderTextColor="#A0AEC0"
                 autoCapitalize="words"
@@ -175,20 +145,12 @@ export default function SignupScreen() {
             </View>
 
             {/* Email */}
-            <Text className="mb-2 text-sm font-bold text-[#17335F]">Email</Text>
-
-            <View className="mb-5 flex-row items-center rounded-2xl border border-[#D7E5F4] bg-[#F8FBFF] px-4">
+            <Text style={styles.fullName}>Email</Text>
+            <View style={styles.fullName2}>
               <Ionicons name="mail-outline" size={21} color="#6EA8F4" />
-
-              <View className="mx-3 h-7 w-px bg-[#DCE8F5]" />
-
+              <View style={styles.fullName3} />
               <TextInput
-                style={{
-                  flex: 1,
-                  minHeight: 56,
-                  color: "#071B46",
-                  fontSize: 16,
-                }}
+                style={styles.layout2}
                 placeholder="Enter your email"
                 placeholderTextColor="#A0AEC0"
                 keyboardType="email-address"
@@ -204,22 +166,14 @@ export default function SignupScreen() {
             </View>
 
             {/* Password */}
-            <Text className="mb-2 text-sm font-bold text-[#17335F]">
+            <Text style={styles.fullName}>
               Password
             </Text>
-
-            <View className="mb-5 flex-row items-center rounded-2xl border border-[#D7E5F4] bg-[#F8FBFF] px-4">
+            <View style={styles.fullName2}>
               <Ionicons name="lock-closed-outline" size={21} color="#6EA8F4" />
-
-              <View className="mx-3 h-7 w-px bg-[#DCE8F5]" />
-
+              <View style={styles.fullName3} />
               <TextInput
-                style={{
-                  flex: 1,
-                  minHeight: 56,
-                  color: "#071B46",
-                  fontSize: 16,
-                }}
+                style={styles.layout2}
                 placeholder="Create a password"
                 placeholderTextColor="#A0AEC0"
                 secureTextEntry={!showPassword}
@@ -232,9 +186,8 @@ export default function SignupScreen() {
                 editable={!loading}
                 returnKeyType="next"
               />
-
               <TouchableOpacity
-                className="ml-2 h-10 w-10 items-center justify-center"
+                style={styles.password}
                 onPress={() => setShowPassword((currentValue) => !currentValue)}
                 disabled={loading}
                 accessibilityRole="button"
@@ -251,26 +204,18 @@ export default function SignupScreen() {
             </View>
 
             {/* Confirm password */}
-            <Text className="mb-2 text-sm font-bold text-[#17335F]">
+            <Text style={styles.fullName}>
               Confirm Password
             </Text>
-
-            <View className="mb-3 flex-row items-center rounded-2xl border border-[#D7E5F4] bg-[#F8FBFF] px-4">
+            <View style={styles.confirmPassword}>
               <Ionicons
                 name="shield-checkmark-outline"
                 size={21}
                 color="#6EA8F4"
               />
-
-              <View className="mx-3 h-7 w-px bg-[#DCE8F5]" />
-
+              <View style={styles.fullName3} />
               <TextInput
-                style={{
-                  flex: 1,
-                  minHeight: 56,
-                  color: "#071B46",
-                  fontSize: 16,
-                }}
+                style={styles.layout2}
                 placeholder="Confirm your password"
                 placeholderTextColor="#A0AEC0"
                 secureTextEntry={!showConfirmPassword}
@@ -284,9 +229,8 @@ export default function SignupScreen() {
                 returnKeyType="done"
                 onSubmitEditing={handleSignup}
               />
-
               <TouchableOpacity
-                className="ml-2 h-10 w-10 items-center justify-center"
+                style={styles.password}
                 onPress={() =>
                   setShowConfirmPassword((currentValue) => !currentValue)
                 }
@@ -305,16 +249,13 @@ export default function SignupScreen() {
                 />
               </TouchableOpacity>
             </View>
-
-            <Text className="mb-7 text-xs leading-5 text-[#8794A8]">
+            <Text style={styles.confirmPassword2}>
               Password must contain at least 8 characters.
             </Text>
 
             {/* Create account button */}
             <TouchableOpacity
-              className={`min-h-[56px] flex-row items-center justify-center rounded-2xl ${
-                loading ? "bg-[#7CB3F8]" : "bg-[#1677F2]"
-              }`}
+              style={[styles.createAccountButton, loading ? styles.createAccountButtonState : styles.createAccountButtonState2]}
               onPress={handleSignup}
               disabled={loading}
               activeOpacity={0.85}
@@ -324,18 +265,16 @@ export default function SignupScreen() {
               {loading ? (
                 <>
                   <ActivityIndicator size="small" color="#FFFFFF" />
-
-                  <Text className="ml-3 text-base font-extrabold text-white">
+                  <Text style={styles.createAccountButton2}>
                     Creating account...
                   </Text>
                 </>
               ) : (
                 <>
-                  <Text className="text-base font-extrabold text-white">
+                  <Text style={styles.createAccountButton3}>
                     Create Account
                   </Text>
-
-                  <View className="ml-2">
+                  <View style={styles.createAccountButton4}>
                     <Ionicons name="arrow-forward" size={21} color="#FFFFFF" />
                   </View>
                 </>
@@ -343,18 +282,17 @@ export default function SignupScreen() {
             </TouchableOpacity>
 
             {/* Login link */}
-            <View className="mt-7 flex-row flex-wrap items-center justify-center">
-              <Text className="text-sm text-[#7A879A]">
+            <View style={styles.loginLink}>
+              <Text style={styles.loginLink2}>
                 Already have an account?{" "}
               </Text>
-
               <TouchableOpacity
                 onPress={() => navigation.goBack()}
                 disabled={loading}
                 accessibilityRole="button"
                 accessibilityLabel="Go to login"
               >
-                <Text className="text-sm font-extrabold text-[#1677F2]">
+                <Text style={styles.loginLink3}>
                   Login
                 </Text>
               </TouchableOpacity>
@@ -362,8 +300,8 @@ export default function SignupScreen() {
           </View>
 
           {/* Footer */}
-          <View className="mt-5 items-center pb-6">
-            <Text className="text-sm font-medium italic text-[#79A9DB]">
+          <View style={styles.footer}>
+            <Text style={styles.footer2}>
               Better habits. Brighter future.
             </Text>
           </View>
@@ -372,3 +310,39 @@ export default function SignupScreen() {
     </SafeAreaView>
   );
 }
+
+// UI styles: edit these values during visual debugging.
+const styles = StyleSheet.create({
+  pesotrackBranding: {marginBottom: 20},
+  pesotrackBranding2: {flexDirection: "row", alignItems: "center"},
+  pesotrackBranding3: {marginRight: 16, height: 68, width: 68, alignItems: "center", justifyContent: "center", borderRadius: 22, backgroundColor: "#1677F2"},
+  pesotrackBranding4: {flex: 1},
+  pesotrackBranding5: {flexDirection: "row", flexWrap: "wrap", alignItems: "baseline"},
+  pesotrackBranding6: {fontSize: 36, fontWeight: "800", letterSpacing: -0.85, color: "#071B46"},
+  pesotrackBranding7: {fontSize: 36, fontWeight: "800", letterSpacing: -0.85, color: "#1677F2"},
+  pesotrackBranding8: {marginTop: 4, fontSize: 15, color: "#65758B"},
+  signupCard: {borderRadius: 28, borderWidth: 1, borderColor: "#E0EBF6", backgroundColor: "#FFFFFF", paddingHorizontal: 24, paddingVertical: 24},
+  signupCard2: {marginBottom: 28},
+  signupCard3: {fontSize: 31, fontWeight: "800", color: "#071B46"},
+  signupCard4: {marginTop: 8, fontSize: 15, lineHeight: 24, color: "#718096"},
+  fullName: {marginBottom: 8, fontSize: 14, lineHeight: 20, fontWeight: "700", color: "#17335F"},
+  fullName2: {marginBottom: 20, flexDirection: "row", alignItems: "center", borderRadius: 16, borderWidth: 1, borderColor: "#D7E5F4", backgroundColor: "#F8FBFF", paddingHorizontal: 16},
+  fullName3: {marginHorizontal: 12, height: 28, width: 1, backgroundColor: "#DCE8F5"},
+  password: {marginLeft: 8, height: 40, width: 40, alignItems: "center", justifyContent: "center"},
+  confirmPassword: {marginBottom: 12, flexDirection: "row", alignItems: "center", borderRadius: 16, borderWidth: 1, borderColor: "#D7E5F4", backgroundColor: "#F8FBFF", paddingHorizontal: 16},
+  confirmPassword2: {marginBottom: 28, fontSize: 12, lineHeight: 20, color: "#8794A8"},
+  createAccountButtonState: {backgroundColor: "#7CB3F8"},
+  createAccountButtonState2: {backgroundColor: "#1677F2"},
+  createAccountButton: {minHeight: 56, flexDirection: "row", alignItems: "center", justifyContent: "center", borderRadius: 16},
+  createAccountButton2: {marginLeft: 12, fontSize: 16, lineHeight: 24, fontWeight: "800", color: "#FFFFFF"},
+  createAccountButton3: {fontSize: 16, lineHeight: 24, fontWeight: "800", color: "#FFFFFF"},
+  createAccountButton4: {marginLeft: 8},
+  loginLink: {marginTop: 28, flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "center"},
+  loginLink2: {fontSize: 14, lineHeight: 20, color: "#7A879A"},
+  loginLink3: {fontSize: 14, lineHeight: 20, fontWeight: "800", color: "#1677F2"},
+  footer: {marginTop: 20, alignItems: "center", paddingBottom: 24},
+  footer2: {fontSize: 14, lineHeight: 20, fontWeight: "500", fontStyle: "italic", color: "#79A9DB"},
+  layout: {flex: 1, backgroundColor: "#F4F9FF"},
+  scrollContent: {flexGrow: 1, paddingHorizontal: 24, paddingTop: 32, paddingBottom: 64},
+  layout2: {flex: 1, minHeight: 56, color: "#071B46", fontSize: 16},
+});

@@ -1,33 +1,32 @@
-import { ActivityIndicator, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Text, TextInput, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import styles from "../styles/EditExpenseScreen.styles";
 
-export default function EditExpenseDescriptionField({ description, setDescription, saving }) {
+export default function ExpenseDescriptionField({ styles, editing = false, description, setDescription, saving }) {
   return <>
     <View style={styles.description}>
-            <View style={styles.amount2}>
-              <View style={styles.category2}>
+            <View style={editing ? styles.amount2 : styles.category2}>
+              <View style={editing ? styles.category2 : styles.category3}>
                 <Ionicons name="create-outline" size={20} color="#1677F2" />
               </View>
-              <Text style={styles.category3}>
+              <Text style={editing ? styles.category3 : styles.category4}>
                 Description
               </Text>
               <Text style={styles.description2}>Optional</Text>
             </View>
-            <View style={styles.amount}>
+            <View style={editing ? styles.amount : styles.description3}>
               <TextInput
                 style={styles.layout3}
-                value={description}
-                onChangeText={setDescription}
                 placeholder="What did you spend on?"
                 placeholderTextColor="#A0AEC0"
                 multiline
                 textAlignVertical="top"
+                value={description}
+                onChangeText={setDescription}
                 editable={!saving}
                 maxLength={150}
                 accessibilityLabel="Expense description"
               />
-              <Text style={styles.description3}>
+              <Text style={editing ? styles.description3 : styles.description4}>
                 {description.length}/150
               </Text>
             </View>

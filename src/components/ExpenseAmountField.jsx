@@ -1,8 +1,6 @@
-import { ActivityIndicator, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import styles from "../styles/EditExpenseScreen.styles";
+import { Text, TextInput, View } from "react-native";
 
-export default function EditExpenseAmountField({ amount, handleAmountChange, saving }) {
+export default function ExpenseAmountField({ styles, amount, handleAmountChange, saving }) {
   return <>
     <View style={styles.amount}>
             <View style={styles.amount2}>
@@ -22,11 +20,11 @@ export default function EditExpenseAmountField({ amount, handleAmountChange, sav
               <View style={styles.amount8} />
               <TextInput
                 style={styles.layout2}
-                value={amount}
-                onChangeText={handleAmountChange}
                 placeholder="0.00"
                 placeholderTextColor="#A0AEC0"
                 keyboardType="decimal-pad"
+                value={amount}
+                onChangeText={handleAmountChange}
                 editable={!saving}
                 maxLength={12}
                 accessibilityLabel="Expense amount"

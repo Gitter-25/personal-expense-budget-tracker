@@ -1,10 +1,10 @@
-import EditExpenseDescriptionField from "../components/EditExpenseDescriptionField";
-import EditExpenseCategorySelector from "../components/EditExpenseCategorySelector";
-import EditExpenseAmountField from "../components/EditExpenseAmountField";
+import ExpenseDescriptionField from "../components/ExpenseDescriptionField";
+import ExpenseCategorySelector from "../components/ExpenseCategorySelector";
+import ExpenseAmountField from "../components/ExpenseAmountField";
 import EditExpenseBackground from "../components/EditExpenseBackground";
 import { Ionicons } from "@expo/vector-icons";
 
-import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import styles from "../styles/EditExpenseScreen.styles";
@@ -66,9 +66,9 @@ export default function EditExpenseScreen() {
             </View>
           </View>
 
-          <EditExpenseAmountField amount={amount} handleAmountChange={handleAmountChange} saving={saving} />
-        <EditExpenseCategorySelector categories={categories} categoryId={categoryId} setCategoryId={setCategoryId} saving={saving} />
-        <EditExpenseDescriptionField description={description} setDescription={setDescription} saving={saving} />
+          <ExpenseAmountField styles={styles} amount={amount} handleAmountChange={handleAmountChange} saving={saving} />
+        <ExpenseCategorySelector styles={styles} editing categories={categories} categoryId={categoryId} setCategoryId={setCategoryId} saving={saving} />
+        <ExpenseDescriptionField styles={styles} editing description={description} setDescription={setDescription} saving={saving} />
         {/* Save */}
           <TouchableOpacity
             disabled={saving || !hasChanges}

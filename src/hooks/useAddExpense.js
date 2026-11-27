@@ -1,4 +1,3 @@
-import { useNavigation } from "@react-navigation/native";
 
 import { useEffect, useState } from "react";
 import { Alert, Keyboard } from "react-native";
@@ -9,7 +8,6 @@ import { addExpense } from "../storage/expenseStorage";
 import { getCategoryOptions } from "../utils/finance";
 
 export default function useAddExpense() {
-  const navigation = useNavigation();
   const { user } = useAuth();
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
@@ -107,5 +105,5 @@ export default function useAddExpense() {
     }
   };
 
-  return { amount, description, setDescription, categoryId, setCategoryId, categories, loadingCategories, saving, handleAmountChange, handleSaveExpense, navigation };
+  return { amount, description, setDescription, categoryId, setCategoryId, categories, loadCategories, loadingCategories, saving, handleAmountChange, handleSaveExpense };
 }

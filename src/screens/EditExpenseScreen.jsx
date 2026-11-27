@@ -1,3 +1,6 @@
+import EditExpenseDescriptionField from "../components/EditExpenseDescriptionField";
+import EditExpenseCategorySelector from "../components/EditExpenseCategorySelector";
+import EditExpenseAmountField from "../components/EditExpenseAmountField";
 import EditExpenseBackground from "../components/EditExpenseBackground";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -63,142 +66,10 @@ export default function EditExpenseScreen() {
             </View>
           </View>
 
-          {/* Amount */}
-          <View style={styles.amount}>
-            <View style={styles.amount2}>
-              <View style={styles.amount3}>
-                <Text style={styles.amount4}>
-                  ₱
-                </Text>
-              </View>
-              <Text style={styles.amount5}>
-                Expense Amount
-              </Text>
-            </View>
-            <View style={styles.amount6}>
-              <Text style={styles.amount7}>
-                ₱
-              </Text>
-              <View style={styles.amount8} />
-              <TextInput
-                style={styles.layout2}
-                value={amount}
-                onChangeText={handleAmountChange}
-                placeholder="0.00"
-                placeholderTextColor="#A0AEC0"
-                keyboardType="decimal-pad"
-                editable={!saving}
-                maxLength={12}
-                accessibilityLabel="Expense amount"
-              />
-            </View>
-          </View>
-
-          {/* Category */}
-          <View style={styles.category}>
-            <View style={styles.amount2}>
-              <View style={styles.category2}>
-                <Ionicons name="grid-outline" size={20} color="#1677F2" />
-              </View>
-              <Text style={styles.category3}>
-                Category
-              </Text>
-            </View>
-
-            {categories.length === 0 ? (
-              <View style={styles.category4}>
-                <Ionicons
-                  name="folder-open-outline"
-                  size={30}
-                  color="#A0AEC0"
-                />
-                <Text style={styles.screen2}>
-                  No categories available.
-                </Text>
-              </View>
-            ) : (
-              <View style={styles.category5}>
-                {categories.map((category) => {
-                  const selected = categoryId === category.id;
-
-                  return (
-                    <TouchableOpacity
-                      key={category.id}
-                      style={[styles.category6, selected
-                          ? styles.categoryState
-                          : styles.categoryState2]}
-                      onPress={() => setCategoryId(category.id)}
-                      disabled={saving}
-                      activeOpacity={0.85}
-                      accessibilityRole="button"
-                      accessibilityLabel={`${category.name} category`}
-                      accessibilityState={{
-                        selected,
-                        disabled: saving,
-                      }}
-                    >
-                      <View
-                        style={[styles.category7, selected ? styles.categoryState3 : styles.categoryState4]}
-                      >
-                        <Text style={styles.category8}>{category.icon ?? "📁"}</Text>
-                      </View>
-                      <Text
-                        numberOfLines={1}
-                        style={[styles.category9, selected ? styles.categoryState5 : styles.categoryState6]}
-                      >
-                        {category.name}
-                      </Text>
-
-                      {selected && (
-                        <View style={styles.category10}>
-                          <Ionicons
-                            name="checkmark-circle"
-                            size={14}
-                            color="#FFFFFF"
-                          />
-                          <Text style={styles.category11}>
-                            Selected
-                          </Text>
-                        </View>
-                      )}
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-            )}
-          </View>
-
-          {/* Description */}
-          <View style={styles.description}>
-            <View style={styles.amount2}>
-              <View style={styles.category2}>
-                <Ionicons name="create-outline" size={20} color="#1677F2" />
-              </View>
-              <Text style={styles.category3}>
-                Description
-              </Text>
-              <Text style={styles.description2}>Optional</Text>
-            </View>
-            <View style={styles.amount}>
-              <TextInput
-                style={styles.layout3}
-                value={description}
-                onChangeText={setDescription}
-                placeholder="What did you spend on?"
-                placeholderTextColor="#A0AEC0"
-                multiline
-                textAlignVertical="top"
-                editable={!saving}
-                maxLength={150}
-                accessibilityLabel="Expense description"
-              />
-              <Text style={styles.description3}>
-                {description.length}/150
-              </Text>
-            </View>
-          </View>
-
-          {/* Save */}
+          <EditExpenseAmountField amount={amount} handleAmountChange={handleAmountChange} saving={saving} />
+        <EditExpenseCategorySelector categories={categories} categoryId={categoryId} setCategoryId={setCategoryId} saving={saving} />
+        <EditExpenseDescriptionField description={description} setDescription={setDescription} saving={saving} />
+        {/* Save */}
           <TouchableOpacity
             disabled={saving || !hasChanges}
             onPress={handleSave}

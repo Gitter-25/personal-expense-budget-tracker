@@ -1,7 +1,9 @@
+import AuthField from "../components/AuthField";
+import AuthButton from "../components/AuthButton";
 import LoginBackground from "../components/LoginBackground";
 import { Ionicons } from "@expo/vector-icons";
 
-import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { KeyboardAvoidingView, Platform, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import styles from "../styles/LoginScreen.styles";
@@ -59,98 +61,9 @@ export default function LoginScreen() {
               </Text>
             </View>
 
-            {/* Email */}
-            <Text style={styles.email}>Email</Text>
-            <View style={styles.email2}>
-              <Ionicons name="mail-outline" size={21} color="#6EA8F4" />
-              <View style={styles.email3} />
-              <TextInput
-                style={styles.layout2}
-                placeholder="Enter your email"
-                placeholderTextColor="#A0AEC0"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-                autoComplete="email"
-                textContentType="emailAddress"
-                value={email}
-                onChangeText={setEmail}
-                editable={!loading}
-                returnKeyType="next"
-                accessibilityLabel="Email address"
-              />
-            </View>
-
-            {/* Password */}
-            <Text style={styles.email}>
-              Password
-            </Text>
-            <View style={styles.password}>
-              <Ionicons name="lock-closed-outline" size={21} color="#6EA8F4" />
-              <View style={styles.email3} />
-              <TextInput
-                style={styles.layout2}
-                placeholder="Enter your password"
-                placeholderTextColor="#A0AEC0"
-                secureTextEntry={!showPassword}
-                autoCapitalize="none"
-                autoCorrect={false}
-                autoComplete="password"
-                textContentType="password"
-                value={password}
-                onChangeText={setPassword}
-                editable={!loading}
-                returnKeyType="done"
-                onSubmitEditing={handleLogin}
-                accessibilityLabel="Password"
-              />
-              <TouchableOpacity
-                style={styles.password2}
-                onPress={() => setShowPassword((currentValue) => !currentValue)}
-                disabled={loading}
-                accessibilityRole="button"
-                accessibilityLabel={
-                  showPassword ? "Hide password" : "Show password"
-                }
-              >
-                <Ionicons
-                  name={showPassword ? "eye-outline" : "eye-off-outline"}
-                  size={22}
-                  color="#8191A9"
-                />
-              </TouchableOpacity>
-            </View>
-
-            {/* Login */}
-            <TouchableOpacity
-              style={[styles.login, loading ? styles.loginState : styles.loginState2]}
-              onPress={handleLogin}
-              disabled={loading}
-              activeOpacity={0.85}
-              accessibilityRole="button"
-              accessibilityLabel="Log in"
-              accessibilityState={{
-                disabled: loading,
-              }}
-            >
-              {loading ? (
-                <>
-                  <ActivityIndicator size="small" color="#FFFFFF" />
-                  <Text style={styles.login2}>
-                    Logging in...
-                  </Text>
-                </>
-              ) : (
-                <>
-                  <Text style={styles.login3}>
-                    Login
-                  </Text>
-                  <View style={styles.login4}>
-                    <Ionicons name="arrow-forward" size={21} color="#FFFFFF" />
-                  </View>
-                </>
-              )}
-            </TouchableOpacity>
+            <AuthField label="Email" icon="mail-outline" placeholder="Enter your email" keyboardType="email-address" autoCapitalize="none" autoCorrect={false} autoComplete="email" textContentType="emailAddress" value={email} onChangeText={setEmail} editable={!loading} returnKeyType="next" accessibilityLabel="Email address" />
+            <AuthField label="Password" icon="lock-closed-outline" visible={showPassword} onToggle={() => setShowPassword(v => !v)} bottom={28} placeholder="Enter your password" autoCapitalize="none" autoCorrect={false} autoComplete="password" textContentType="password" value={password} onChangeText={setPassword} editable={!loading} returnKeyType="done" onSubmitEditing={handleLogin} />
+            <AuthButton title="Login" busyTitle="Logging in..." loading={loading} onPress={handleLogin} />
 
             {/* Signup */}
             <View style={styles.signup}>

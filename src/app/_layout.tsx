@@ -1,102 +1,33 @@
-import { Stack, useRouter, useSegments } from "expo-router";
-import { useEffect, useState } from "react";
-import { ActivityIndicator, View } from "react-native";
+import { Stack } from "expo-router";
+import { ActivityIndicator, View, Text, TouchableOpacity } from "react-native";
 import "../global.css";
-import { supabase } from "../lib/supabase";
+import { AuthProvider, useAuth } from "../context/AuthContext";
 
-export default function RootLayout() {
-  const router = useRouter();
-  const segments = useSegments();
-
-  const [session, setSession] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const loadSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      setSession(session);
-      setLoading(false);
-    };
-
-    loadSession();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
-
-  useEffect(() => {
-    if (loading) {
-      return;
-    }
-
-    const currentRoute = segments[0];
-
-    const isAuthScreen = currentRoute === "login" || currentRoute === "signup";
-
-    if (!session && !isAuthScreen) {
-      router.replace("/login");
-      return;
-    }
-
-    if (session && isAuthScreen) {
-      router.replace("/(tabs)");
-    }
-  }, [session, loading, segments, router]);
-
-  if (loading) {
-    return (
-      <View className="flex-1 items-center justify-center bg-gray-100">
-        <ActivityIndicator />
-      </View>
-    );
+function RootNavigator() {
+  const { user, loading, error, loadSession } = useAuth();
+  if (loading || error) {
+    return <View className="flex-1 items-center justify-center bg-gray-100">
+      {loading ? <ActivityIndicator /> : <>
+        <Text>{error}</Text>
+        <TouchableOpacity onPress={loadSession}><Text>Retry</Text></TouchableOpacity>
+      </>}
+    </View>;
   }
 
-  return (
-    <Stack>
-      <Stack.Screen
-        name="(tabs)"
-        options={{
-          headerShown: false,
-        }}
-      />
+  // Protected routes prevent returning to private screens after logout.
+  return <Stack screenOptions={{ headerShown: false }}>
+    <Stack.Protected guard={!user}>
+      <Stack.Screen name="login" />
+      <Stack.Screen name="signup" />
+    </Stack.Protected>
+    <Stack.Protected guard={!!user}>
+      <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="profile" />
+      <Stack.Screen name="edit-expense" />
+    </Stack.Protected>
+  </Stack>;
+}
 
-      <Stack.Screen
-        name="login"
-        options={{
-          headerShown: false,
-        }}
-      />
-
-      <Stack.Screen
-        name="signup"
-        options={{
-          headerShown: false,
-        }}
-      />
-
-      <Stack.Screen
-        name="profile"
-        options={{
-          headerShown: false,
-        }}
-      />
-
-      <Stack.Screen
-        name="edit-expense"
-        options={{
-          headerShown: false,
-        }}
-      />
-    </Stack>
-  );
+export default function RootLayout() {
+  return <AuthProvider><RootNavigator /></AuthProvider>;
 }

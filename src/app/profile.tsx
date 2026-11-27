@@ -14,7 +14,8 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { supabase } from "../lib/supabase";
+import { restoreSession } from "../storage/sessionStorage";
+import { updateUserName } from "../storage/userStorage";
 
 export default function ProfileScreen() {
   const [email, setEmail] = useState("");
@@ -31,12 +32,9 @@ export default function ProfileScreen() {
     try {
       setLoading(true);
 
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
+      const user = await restoreSession();
 
-      if (userError || !user) {
+      if (!user) {
         Alert.alert(
           "Session error",
           "Your account could not be verified. Please log in again.",
@@ -48,18 +46,7 @@ export default function ProfileScreen() {
 
       setEmail(user.email ?? "");
 
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("full_name")
-        .eq("id", user.id)
-        .maybeSingle();
-
-      if (error) {
-        Alert.alert("Unable to load profile", error.message);
-        return;
-      }
-
-      const loadedName = data?.full_name ?? "";
+      const loadedName = user.name;
 
       setFullName(loadedName);
       setOriginalFullName(loadedName);
@@ -103,12 +90,9 @@ export default function ProfileScreen() {
     try {
       setSaving(true);
 
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
+      const user = await restoreSession();
 
-      if (userError || !user) {
+      if (!user) {
         Alert.alert(
           "Session error",
           "Your session could not be verified. Please log in again.",
@@ -118,21 +102,7 @@ export default function ProfileScreen() {
         return;
       }
 
-      const { error } = await supabase.from("profiles").upsert(
-        {
-          id: user.id,
-          full_name: trimmedName,
-          updated_at: new Date().toISOString(),
-        },
-        {
-          onConflict: "id",
-        },
-      );
-
-      if (error) {
-        Alert.alert("Unable to save profile", error.message);
-        return;
-      }
+      await updateUserName(user.id, trimmedName);
 
       setFullName(trimmedName);
       setOriginalFullName(trimmedName);

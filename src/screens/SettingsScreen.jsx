@@ -1,3 +1,4 @@
+import SettingsBackground from "../components/SettingsBackground";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute, useFocusEffect } from "@react-navigation/native";
 import { useCallback, useEffect, useState } from "react";
@@ -7,6 +8,7 @@ import {
   ScrollView,
   Text,
   TouchableOpacity,
+  StyleSheet,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -77,91 +79,68 @@ export default function SettingsScreen() {
 
   return (
     <SafeAreaView
-      style={{
-        flex: 1,
-        backgroundColor: "#F4F9FF",
-      }}
+      style={styles.layout}
       edges={["top", "left", "right"]}
     >
-      {/* Decorative background */}
-      <View
-        pointerEvents="none"
-        className="absolute -left-28 -top-24 h-72 w-72 rounded-full bg-[#D8EAFE]"
-      />
-
-      <View
-        pointerEvents="none"
-        className="absolute -right-36 top-44 h-80 w-80 rounded-full bg-[#E4F0FF]"
-      />
-
+      <SettingsBackground />
       <ScrollView
-        style={{ flex: 1 }}
-        contentContainerStyle={{
-          paddingHorizontal: 20,
-          paddingTop: 20,
-          paddingBottom: 40,
-        }}
+        style={styles.header3}
+        contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
         {/* Header */}
-        <View className="mb-7 flex-row items-center">
-          <View className="mr-3 h-12 w-12 items-center justify-center rounded-2xl bg-[#1677F2]">
+        <View style={styles.header}>
+          <View style={styles.header2}>
             <Ionicons name="settings" size={26} color="#FFFFFF" />
           </View>
-
-          <View className="flex-1">
-            <Text className="text-[26px] font-extrabold text-[#071B46]">
+          <View style={styles.header3}>
+            <Text style={styles.header4}>
               Settings
             </Text>
-
-            <Text className="mt-0.5 text-sm text-[#66758D]">
+            <Text style={styles.header5}>
               Manage your account and preferences
             </Text>
           </View>
         </View>
 
         {/* Account */}
-        <View className="rounded-[26px] border border-[#E3EDF8] bg-white p-5">
-          <View className="flex-row items-center">
-            <View className="mr-4 h-14 w-14 items-center justify-center rounded-full bg-[#EAF3FF]">
+        <View style={styles.account}>
+          <View style={styles.account2}>
+            <View style={styles.account3}>
               <Ionicons name="person" size={28} color="#1677F2" />
             </View>
-
-            <View className="flex-1">
-              <Text className="text-[20px] font-extrabold text-[#071B46]">
+            <View style={styles.header3}>
+              <Text style={styles.account4}>
                 Account
               </Text>
 
               {loadingUser ? (
-                <View className="mt-2 flex-row items-center">
+                <View style={styles.account5}>
                   <ActivityIndicator size="small" color="#1677F2" />
-
-                  <Text className="ml-2 text-sm text-[#718096]">
+                  <Text style={styles.account6}>
                     Loading account...
                   </Text>
                 </View>
               ) : userLoadFailed ? (
-                <View className="mt-2">
-                  <Text className="text-sm text-[#D92D5E]">
+                <View style={styles.account7}>
+                  <Text style={styles.account8}>
                     Unable to load account.
                   </Text>
-
                   <TouchableOpacity
-                    className="mt-2 self-start flex-row items-center"
+                    style={styles.account9}
                     onPress={loadUser}
                     activeOpacity={0.8}
                     accessibilityRole="button"
                     accessibilityLabel="Retry loading account"
                   >
                     <Ionicons name="refresh" size={16} color="#1677F2" />
-
-                    <Text className="ml-1 text-sm font-bold text-[#1677F2]">
+                    <Text style={styles.account10}>
                       Retry
                     </Text>
                   </TouchableOpacity>
                 </View>
               ) : (
-                <Text numberOfLines={1} className="mt-1 text-sm text-[#66758D]">
+                <Text numberOfLines={1} style={styles.account11}>
                   {email || "No email available"}
                 </Text>
               )}
@@ -170,7 +149,7 @@ export default function SettingsScreen() {
 
           {/* Profile */}
           <TouchableOpacity
-            className="mt-6 flex-row items-center rounded-2xl bg-[#F7FAFF] px-4 py-4"
+            style={styles.profile}
             onPress={() => navigation.navigate("Profile")}
             disabled={loadingUser || loggingOut}
             activeOpacity={0.8}
@@ -181,35 +160,30 @@ export default function SettingsScreen() {
               disabled: loadingUser || loggingOut,
             }}
           >
-            <View className="mr-3 h-10 w-10 items-center justify-center rounded-full bg-[#E8F2FF]">
+            <View style={styles.profile2}>
               <Ionicons name="person-outline" size={21} color="#1677F2" />
             </View>
-
-            <View className="flex-1">
-              <Text className="font-bold text-[#071B46]">My Profile</Text>
-
-              <Text className="mt-0.5 text-xs text-[#7A879A]">
+            <View style={styles.header3}>
+              <Text style={styles.profile3}>My Profile</Text>
+              <Text style={styles.profile4}>
                 View and update your profile details
               </Text>
             </View>
-
             <Ionicons name="chevron-forward" size={20} color="#8AA0BB" />
           </TouchableOpacity>
         </View>
 
         {/* App information */}
-        <View className="mt-5 rounded-[26px] border border-[#E3EDF8] bg-white p-5">
-          <View className="flex-row items-center">
-            <View className="mr-3 h-11 w-11 items-center justify-center rounded-full bg-[#EAF3FF]">
+        <View style={styles.appInformation}>
+          <View style={styles.account2}>
+            <View style={styles.appInformation2}>
               <Ionicons name="wallet" size={23} color="#1677F2" />
             </View>
-
-            <View className="flex-1">
-              <Text className="text-[18px] font-extrabold text-[#071B46]">
+            <View style={styles.header3}>
+              <Text style={styles.appInformation3}>
                 PesoTrack
               </Text>
-
-              <Text className="mt-1 text-sm text-[#718096]">
+              <Text style={styles.appInformation4}>
                 Plan today. Build tomorrow.
               </Text>
             </View>
@@ -218,9 +192,7 @@ export default function SettingsScreen() {
 
         {/* Logout */}
         <TouchableOpacity
-          className={`mt-6 min-h-[56px] flex-row items-center justify-center rounded-2xl ${
-            loggingOut ? "bg-[#F5B5C5]" : "bg-[#FDE8EE]"
-          }`}
+          style={[styles.logout, loggingOut ? styles.logoutState : styles.logoutState2]}
           onPress={handleLogout}
           disabled={loggingOut}
           activeOpacity={0.85}
@@ -233,16 +205,14 @@ export default function SettingsScreen() {
           {loggingOut ? (
             <>
               <ActivityIndicator size="small" color="#D92D5E" />
-
-              <Text className="ml-3 font-extrabold text-[#D92D5E]">
+              <Text style={styles.logout2}>
                 Logging out...
               </Text>
             </>
           ) : (
             <>
               <Ionicons name="log-out-outline" size={21} color="#D92D5E" />
-
-              <Text className="ml-2 font-extrabold text-[#D92D5E]">
+              <Text style={styles.logout3}>
                 Log Out
               </Text>
             </>
@@ -250,10 +220,9 @@ export default function SettingsScreen() {
         </TouchableOpacity>
 
         {/* Footer */}
-        <View className="mt-7 items-center">
-          <Text className="text-xs font-medium text-[#9AA8B9]">PesoTrack</Text>
-
-          <Text className="mt-1 text-[11px] text-[#AAB5C3]">
+        <View style={styles.footer}>
+          <Text style={styles.footer2}>PesoTrack</Text>
+          <Text style={styles.footer3}>
             Better habits. Brighter future.
           </Text>
         </View>
@@ -261,3 +230,41 @@ export default function SettingsScreen() {
     </SafeAreaView>
   );
 }
+
+// UI styles: edit these values during visual debugging.
+const styles = StyleSheet.create({
+  header: {marginBottom: 28, flexDirection: "row", alignItems: "center"},
+  header2: {marginRight: 12, height: 48, width: 48, alignItems: "center", justifyContent: "center", borderRadius: 16, backgroundColor: "#1677F2"},
+  header3: {flex: 1},
+  header4: {fontSize: 26, fontWeight: "800", color: "#071B46"},
+  header5: {marginTop: 2, fontSize: 14, lineHeight: 20, color: "#66758D"},
+  account: {borderRadius: 26, borderWidth: 1, borderColor: "#E3EDF8", backgroundColor: "#FFFFFF", padding: 20},
+  account2: {flexDirection: "row", alignItems: "center"},
+  account3: {marginRight: 16, height: 56, width: 56, alignItems: "center", justifyContent: "center", borderRadius: 9999, backgroundColor: "#EAF3FF"},
+  account4: {fontSize: 20, fontWeight: "800", color: "#071B46"},
+  account5: {marginTop: 8, flexDirection: "row", alignItems: "center"},
+  account6: {marginLeft: 8, fontSize: 14, lineHeight: 20, color: "#718096"},
+  account7: {marginTop: 8},
+  account8: {fontSize: 14, lineHeight: 20, color: "#D92D5E"},
+  account9: {marginTop: 8, alignSelf: "flex-start", flexDirection: "row", alignItems: "center"},
+  account10: {marginLeft: 4, fontSize: 14, lineHeight: 20, fontWeight: "700", color: "#1677F2"},
+  account11: {marginTop: 4, fontSize: 14, lineHeight: 20, color: "#66758D"},
+  profile: {marginTop: 24, flexDirection: "row", alignItems: "center", borderRadius: 16, backgroundColor: "#F7FAFF", paddingHorizontal: 16, paddingVertical: 16},
+  profile2: {marginRight: 12, height: 40, width: 40, alignItems: "center", justifyContent: "center", borderRadius: 9999, backgroundColor: "#E8F2FF"},
+  profile3: {fontWeight: "700", color: "#071B46"},
+  profile4: {marginTop: 2, fontSize: 12, lineHeight: 16, color: "#7A879A"},
+  appInformation: {marginTop: 20, borderRadius: 26, borderWidth: 1, borderColor: "#E3EDF8", backgroundColor: "#FFFFFF", padding: 20},
+  appInformation2: {marginRight: 12, height: 44, width: 44, alignItems: "center", justifyContent: "center", borderRadius: 9999, backgroundColor: "#EAF3FF"},
+  appInformation3: {fontSize: 18, fontWeight: "800", color: "#071B46"},
+  appInformation4: {marginTop: 4, fontSize: 14, lineHeight: 20, color: "#718096"},
+  logoutState: {backgroundColor: "#F5B5C5"},
+  logoutState2: {backgroundColor: "#FDE8EE"},
+  logout: {marginTop: 24, minHeight: 56, flexDirection: "row", alignItems: "center", justifyContent: "center", borderRadius: 16},
+  logout2: {marginLeft: 12, fontWeight: "800", color: "#D92D5E"},
+  logout3: {marginLeft: 8, fontWeight: "800", color: "#D92D5E"},
+  footer: {marginTop: 28, alignItems: "center"},
+  footer2: {fontSize: 12, lineHeight: 16, fontWeight: "500", color: "#9AA8B9"},
+  footer3: {marginTop: 4, fontSize: 11, color: "#AAB5C3"},
+  layout: {flex: 1, backgroundColor: "#F4F9FF"},
+  scrollContent: {paddingHorizontal: 20, paddingTop: 20, paddingBottom: 40},
+});

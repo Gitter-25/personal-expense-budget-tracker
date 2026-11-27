@@ -1,3 +1,6 @@
+import HomeBackground from "../components/HomeBackground";
+import { formatCurrency } from "../utils/formatCurrency";
+import BudgetSummary from "../components/BudgetSummary";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute, useFocusEffect } from "@react-navigation/native";
 import { useCallback, useMemo, useState } from "react";
@@ -8,6 +11,7 @@ import {
   ScrollView,
   Text,
   TouchableOpacity,
+  StyleSheet,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -15,14 +19,6 @@ import { useAuth } from "../context/AuthContext";
 import { getExpenses, getExpenseById, addExpense, updateExpense, deleteExpense } from "../storage/expenseStorage";
 import { getMonthlyBudget, saveMonthlyBudget } from "../storage/budgetStorage";
 import { getCategoryOptions, toScreenExpense } from "../utils/finance";
-
-
-const formatCurrency = (value) => {
-  return `₱${value.toLocaleString("en-PH", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
-};
 
 const formatExpenseDate = (date) => {
   const [year, month, day] = date.split("-").map(Number);
@@ -161,30 +157,13 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView
-      style={{
-        flex: 1,
-        backgroundColor: "#F4F9FF",
-      }}
+      style={styles.layout}
       edges={["top", "left", "right"]}
     >
-      {/* Background decorations */}
-      <View
-        pointerEvents="none"
-        className="absolute -left-28 -top-24 h-72 w-72 rounded-full bg-[#D8EAFE]"
-      />
-
-      <View
-        pointerEvents="none"
-        className="absolute -right-40 top-44 h-80 w-80 rounded-full bg-[#E6F1FF]"
-      />
-
+      <HomeBackground />
       <ScrollView
-        style={{ flex: 1 }}
-        contentContainerStyle={{
-          paddingHorizontal: 20,
-          paddingTop: 20,
-          paddingBottom: 40,
-        }}
+        style={styles.pesotrackBranding3}
+        contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
@@ -195,17 +174,15 @@ export default function HomeScreen() {
         }
       >
         {/* Top bar */}
-        <View className="mb-6 flex-row items-center justify-between">
-          <View className="flex-row items-center">
-            <View className="mr-3 h-12 w-12 items-center justify-center rounded-2xl bg-[#1677F2]">
+        <View style={styles.topBar}>
+          <View style={styles.topBar2}>
+            <View style={styles.topBar3}>
               <Ionicons name="home" size={25} color="#FFFFFF" />
             </View>
-
-            <Text className="text-2xl font-extrabold text-[#071B46]">Home</Text>
+            <Text style={styles.topBar4}>Home</Text>
           </View>
-
           <TouchableOpacity
-            className="h-12 w-12 items-center justify-center rounded-full border border-[#E3EDF8] bg-white"
+            style={styles.topBar5}
             onPress={() => navigation.navigate("Settings")}
             activeOpacity={0.8}
             accessibilityRole="button"
@@ -216,142 +193,43 @@ export default function HomeScreen() {
         </View>
 
         {/* PesoTrack branding */}
-        <View className="mb-6 flex-row items-center">
-          <View className="mr-4 h-[70px] w-[70px] items-center justify-center rounded-[22px] bg-[#1677F2]">
+        <View style={styles.pesotrackBranding}>
+          <View style={styles.pesotrackBranding2}>
             <Ionicons name="wallet" size={38} color="#FFFFFF" />
           </View>
-
-          <View className="flex-1">
-            <View className="flex-row flex-wrap items-baseline">
-              <Text className="text-[34px] font-extrabold tracking-tight text-[#071B46]">
+          <View style={styles.pesotrackBranding3}>
+            <View style={styles.pesotrackBranding4}>
+              <Text style={styles.pesotrackBranding5}>
                 Peso
               </Text>
-
-              <Text className="text-[34px] font-extrabold tracking-tight text-[#1677F2]">
+              <Text style={styles.pesotrackBranding6}>
                 Track
               </Text>
             </View>
-
-            <Text className="mt-1 text-[15px] text-[#65758B]">
+            <Text style={styles.pesotrackBranding7}>
               Manage your personal expenses
             </Text>
           </View>
         </View>
-
-        {/* Monthly budget summary */}
-        <View className="overflow-hidden rounded-[28px] bg-[#1E63E9] px-5 py-6">
-          <View
-            pointerEvents="none"
-            className="absolute -right-20 -top-20 h-52 w-52 rounded-full bg-[#6955F5]"
-          />
-
-          <View
-            pointerEvents="none"
-            className="absolute -bottom-28 left-10 h-56 w-56 rounded-full bg-[#0D83ED]"
-          />
-
-          <View className="flex-row items-center">
-            <View className="mr-4 h-14 w-14 items-center justify-center rounded-2xl bg-white/15">
-              <Ionicons name="wallet-outline" size={29} color="#FFFFFF" />
-            </View>
-
-            <View className="flex-1">
-              <Text className="text-[15px] font-medium text-white/80">
-                Monthly Budget
-              </Text>
-
-              <Text
-                numberOfLines={1}
-                adjustsFontSizeToFit
-                className="mt-1 text-[32px] font-extrabold text-white"
-              >
-                {formatCurrency(monthlyBudget)}
-              </Text>
-            </View>
-          </View>
-
-          <View className="mt-6">
-            <View className="mb-2 flex-row items-center justify-between">
-              <Text className="text-xs font-medium text-white/75">
-                Budget used
-              </Text>
-
-              <Text className="text-xs font-bold text-white">
-                {budgetProgressPercentage}%
-              </Text>
-            </View>
-
-            <View className="h-3 overflow-hidden rounded-full bg-white/25">
-              <View
-                style={{
-                  width: `${budgetProgress * 100}%`,
-                }}
-                className="h-full rounded-full bg-[#40D8EA]"
-              />
-            </View>
-          </View>
-
-          <View className="mt-6 flex-row">
-            <View className="flex-1 flex-row items-center">
-              <View className="mr-3 h-11 w-11 items-center justify-center rounded-full bg-white/15">
-                <Ionicons name="card-outline" size={23} color="#FFFFFF" />
-              </View>
-
-              <View className="flex-1">
-                <Text className="text-xs text-white/70">Total Spent</Text>
-
-                <Text
-                  numberOfLines={1}
-                  adjustsFontSizeToFit
-                  className="mt-1 text-lg font-extrabold text-white"
-                >
-                  {formatCurrency(monthlySpent)}
-                </Text>
-              </View>
-            </View>
-
-            <View className="mx-3 w-px bg-white/25" />
-
-            <View className="flex-1 flex-row items-center">
-              <View className="mr-3 h-11 w-11 items-center justify-center rounded-full bg-white/15">
-                <Ionicons name="time-outline" size={23} color="#FFFFFF" />
-              </View>
-
-              <View className="flex-1">
-                <Text className="text-xs text-white/70">Remaining</Text>
-
-                <Text
-                  numberOfLines={1}
-                  adjustsFontSizeToFit
-                  className={`mt-1 text-lg font-extrabold ${
-                    remainingBudget < 0 ? "text-[#FFD7DF]" : "text-white"
-                  }`}
-                >
-                  {formatCurrency(remainingBudget)}
-                </Text>
-              </View>
-            </View>
-          </View>
-        </View>
+        <BudgetSummary {...{ monthlyBudget, monthlySpent, remainingBudget, budgetProgress, budgetProgressPercentage }} />
 
         {/* Recent expenses header */}
-        <View className="mb-4 mt-7 flex-row items-center justify-between">
-          <Text className="text-[24px] font-extrabold text-[#071B46]">
+        <View style={styles.recentExpensesHeader}>
+          <Text style={styles.recentExpensesHeader2}>
             Recent Expenses
           </Text>
 
           {expenses.length > 5 && (
             <TouchableOpacity
-              className="flex-row items-center"
+              style={styles.topBar2}
               onPress={() => navigation.navigate("Statistics")}
               activeOpacity={0.7}
               accessibilityRole="button"
               accessibilityLabel="View all expense statistics"
             >
-              <Text className="mr-1 text-sm font-bold text-[#1677F2]">
+              <Text style={styles.recentExpensesHeader3}>
                 View All
               </Text>
-
               <Ionicons name="chevron-forward" size={17} color="#1677F2" />
             </TouchableOpacity>
           )}
@@ -359,37 +237,32 @@ export default function HomeScreen() {
 
         {/* Expense content */}
         {loadingExpenses ? (
-          <View className="items-center rounded-[24px] border border-[#E3EDF8] bg-white px-5 py-10">
+          <View style={styles.expenseContent}>
             <ActivityIndicator size="small" color="#1677F2" />
-
-            <Text className="mt-3 text-sm text-[#718096]">
+            <Text style={styles.expenseContent2}>
               Loading expenses...
             </Text>
           </View>
         ) : recentExpenses.length === 0 ? (
-          <View className="items-center rounded-[24px] border border-[#E3EDF8] bg-white px-6 py-10">
-            <View className="h-16 w-16 items-center justify-center rounded-full bg-[#EAF3FF]">
+          <View style={styles.expenseContent3}>
+            <View style={styles.expenseContent4}>
               <Ionicons name="receipt-outline" size={30} color="#1677F2" />
             </View>
-
-            <Text className="mt-4 text-lg font-extrabold text-[#071B46]">
+            <Text style={styles.expenseContent5}>
               No expenses yet
             </Text>
-
-            <Text className="mt-2 text-center text-sm leading-5 text-[#7A879A]">
+            <Text style={styles.expenseContent6}>
               Add your first expense and it will appear here.
             </Text>
-
             <TouchableOpacity
-              className="mt-5 flex-row items-center rounded-2xl bg-[#1677F2] px-5 py-3"
+              style={styles.expenseContent7}
               onPress={() => navigation.navigate("AddExpense")}
               activeOpacity={0.85}
               accessibilityRole="button"
               accessibilityLabel="Add your first expense"
             >
               <Ionicons name="add" size={19} color="#FFFFFF" />
-
-              <Text className="ml-2 font-bold text-white">Add Expense</Text>
+              <Text style={styles.expenseContent8}>Add Expense</Text>
             </TouchableOpacity>
           </View>
         ) : (
@@ -397,66 +270,57 @@ export default function HomeScreen() {
             {recentExpenses.map((expense, index) => (
               <View
                 key={expense.id}
-                className="mb-4 overflow-hidden rounded-[24px] border border-[#E3EDF8] bg-white"
+                style={styles.expenseContent9}
               >
                 <View
-                  className={`absolute bottom-0 left-0 top-0 w-1.5 ${
-                    index % 2 === 0 ? "bg-[#FFC85A]" : "bg-[#8566F6]"
-                  }`}
+                  style={[styles.expenseContent10, index % 2 === 0 ? styles.expenseContentState : styles.expenseContentState2]}
                 />
-
-                <View className="p-5">
-                  <View className="flex-row items-start justify-between">
-                    <View className="mr-3 flex-1 flex-row">
-                      <View className="mr-3 h-14 w-14 items-center justify-center rounded-full bg-[#FFF6D9]">
-                        <Text className="text-2xl">
+                <View style={styles.expenseContent11}>
+                  <View style={styles.expenseContent12}>
+                    <View style={styles.expenseContent13}>
+                      <View style={styles.expenseContent14}>
+                        <Text style={styles.expenseContent15}>
                           {expense.category?.icon ?? "💰"}
                         </Text>
                       </View>
-
-                      <View className="flex-1">
+                      <View style={styles.pesotrackBranding3}>
                         <Text
                           numberOfLines={1}
-                          className="text-[17px] font-extrabold text-[#071B46]"
+                          style={styles.expenseContent16}
                         >
                           {expense.category?.name ?? "Uncategorized"}
                         </Text>
-
                         <Text
                           numberOfLines={2}
-                          className="mt-1 text-sm leading-5 text-[#6F7E92]"
+                          style={styles.expenseContent17}
                         >
                           {expense.description || "No description"}
                         </Text>
-
-                        <View className="mt-2 flex-row items-center">
+                        <View style={styles.expenseContent18}>
                           <Ionicons
                             name="calendar-outline"
                             size={15}
                             color="#1677F2"
                           />
-
-                          <Text className="ml-1.5 text-xs text-[#75859A]">
+                          <Text style={styles.expenseContent19}>
                             {formatExpenseDate(expense.expense_date)}
                           </Text>
                         </View>
                       </View>
                     </View>
-
-                    <View className="max-w-[38%] rounded-full bg-[#FCE8F0] px-3 py-2">
+                    <View style={styles.expenseContent20}>
                       <Text
                         numberOfLines={1}
                         adjustsFontSizeToFit
-                        className="font-extrabold text-[#9B174C]"
+                        style={styles.expenseContent21}
                       >
                         {formatCurrency(Number(expense.amount))}
                       </Text>
                     </View>
                   </View>
-
-                  <View className="mt-4 flex-row">
+                  <View style={styles.expenseContent22}>
                     <TouchableOpacity
-                      className="mr-3 flex-row items-center rounded-xl bg-[#EAF4FF] px-4 py-2.5"
+                      style={styles.expenseContent23}
                       onPress={() => handleEditExpense(expense)}
                       activeOpacity={0.8}
                       accessibilityRole="button"
@@ -467,14 +331,12 @@ export default function HomeScreen() {
                         size={18}
                         color="#1677F2"
                       />
-
-                      <Text className="ml-2 text-sm font-bold text-[#1677F2]">
+                      <Text style={styles.expenseContent24}>
                         Edit
                       </Text>
                     </TouchableOpacity>
-
                     <TouchableOpacity
-                      className="flex-row items-center rounded-xl bg-[#FDE9F0] px-4 py-2.5"
+                      style={styles.expenseContent25}
                       onPress={() => handleDeleteExpense(expense.id)}
                       activeOpacity={0.8}
                       accessibilityRole="button"
@@ -485,8 +347,7 @@ export default function HomeScreen() {
                         size={18}
                         color="#E91E63"
                       />
-
-                      <Text className="ml-2 text-sm font-bold text-[#E91E63]">
+                      <Text style={styles.expenseContent26}>
                         Delete
                       </Text>
                     </TouchableOpacity>
@@ -500,3 +361,52 @@ export default function HomeScreen() {
     </SafeAreaView>
   );
 }
+
+// UI styles: edit these values during visual debugging.
+const styles = StyleSheet.create({
+  topBar: {marginBottom: 24, flexDirection: "row", alignItems: "center", justifyContent: "space-between"},
+  topBar2: {flexDirection: "row", alignItems: "center"},
+  topBar3: {marginRight: 12, height: 48, width: 48, alignItems: "center", justifyContent: "center", borderRadius: 16, backgroundColor: "#1677F2"},
+  topBar4: {fontSize: 24, lineHeight: 32, fontWeight: "800", color: "#071B46"},
+  topBar5: {height: 48, width: 48, alignItems: "center", justifyContent: "center", borderRadius: 9999, borderWidth: 1, borderColor: "#E3EDF8", backgroundColor: "#FFFFFF"},
+  pesotrackBranding: {marginBottom: 24, flexDirection: "row", alignItems: "center"},
+  pesotrackBranding2: {marginRight: 16, height: 70, width: 70, alignItems: "center", justifyContent: "center", borderRadius: 22, backgroundColor: "#1677F2"},
+  pesotrackBranding3: {flex: 1},
+  pesotrackBranding4: {flexDirection: "row", flexWrap: "wrap", alignItems: "baseline"},
+  pesotrackBranding5: {fontSize: 34, fontWeight: "800", letterSpacing: -0.85, color: "#071B46"},
+  pesotrackBranding6: {fontSize: 34, fontWeight: "800", letterSpacing: -0.85, color: "#1677F2"},
+  pesotrackBranding7: {marginTop: 4, fontSize: 15, color: "#65758B"},
+  recentExpensesHeader: {marginBottom: 16, marginTop: 28, flexDirection: "row", alignItems: "center", justifyContent: "space-between"},
+  recentExpensesHeader2: {fontSize: 24, fontWeight: "800", color: "#071B46"},
+  recentExpensesHeader3: {marginRight: 4, fontSize: 14, lineHeight: 20, fontWeight: "700", color: "#1677F2"},
+  expenseContent: {alignItems: "center", borderRadius: 24, borderWidth: 1, borderColor: "#E3EDF8", backgroundColor: "#FFFFFF", paddingHorizontal: 20, paddingVertical: 40},
+  expenseContent2: {marginTop: 12, fontSize: 14, lineHeight: 20, color: "#718096"},
+  expenseContent3: {alignItems: "center", borderRadius: 24, borderWidth: 1, borderColor: "#E3EDF8", backgroundColor: "#FFFFFF", paddingHorizontal: 24, paddingVertical: 40},
+  expenseContent4: {height: 64, width: 64, alignItems: "center", justifyContent: "center", borderRadius: 9999, backgroundColor: "#EAF3FF"},
+  expenseContent5: {marginTop: 16, fontSize: 18, lineHeight: 28, fontWeight: "800", color: "#071B46"},
+  expenseContent6: {marginTop: 8, textAlign: "center", fontSize: 14, lineHeight: 20, color: "#7A879A"},
+  expenseContent7: {marginTop: 20, flexDirection: "row", alignItems: "center", borderRadius: 16, backgroundColor: "#1677F2", paddingHorizontal: 20, paddingVertical: 12},
+  expenseContent8: {marginLeft: 8, fontWeight: "700", color: "#FFFFFF"},
+  expenseContent9: {marginBottom: 16, overflow: "hidden", borderRadius: 24, borderWidth: 1, borderColor: "#E3EDF8", backgroundColor: "#FFFFFF"},
+  expenseContentState: {backgroundColor: "#FFC85A"},
+  expenseContentState2: {backgroundColor: "#8566F6"},
+  expenseContent10: {position: "absolute", bottom: 0, left: 0, top: 0, width: 6},
+  expenseContent11: {padding: 20},
+  expenseContent12: {flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between"},
+  expenseContent13: {marginRight: 12, flex: 1, flexDirection: "row"},
+  expenseContent14: {marginRight: 12, height: 56, width: 56, alignItems: "center", justifyContent: "center", borderRadius: 9999, backgroundColor: "#FFF6D9"},
+  expenseContent15: {fontSize: 24, lineHeight: 32},
+  expenseContent16: {fontSize: 17, fontWeight: "800", color: "#071B46"},
+  expenseContent17: {marginTop: 4, fontSize: 14, lineHeight: 20, color: "#6F7E92"},
+  expenseContent18: {marginTop: 8, flexDirection: "row", alignItems: "center"},
+  expenseContent19: {marginLeft: 6, fontSize: 12, lineHeight: 16, color: "#75859A"},
+  expenseContent20: {maxWidth: "38%", borderRadius: 9999, backgroundColor: "#FCE8F0", paddingHorizontal: 12, paddingVertical: 8},
+  expenseContent21: {fontWeight: "800", color: "#9B174C"},
+  expenseContent22: {marginTop: 16, flexDirection: "row"},
+  expenseContent23: {marginRight: 12, flexDirection: "row", alignItems: "center", borderRadius: 12, backgroundColor: "#EAF4FF", paddingHorizontal: 16, paddingVertical: 10},
+  expenseContent24: {marginLeft: 8, fontSize: 14, lineHeight: 20, fontWeight: "700", color: "#1677F2"},
+  expenseContent25: {flexDirection: "row", alignItems: "center", borderRadius: 12, backgroundColor: "#FDE9F0", paddingHorizontal: 16, paddingVertical: 10},
+  expenseContent26: {marginLeft: 8, fontSize: 14, lineHeight: 20, fontWeight: "700", color: "#E91E63"},
+  layout: {flex: 1, backgroundColor: "#F4F9FF"},
+  scrollContent: {paddingHorizontal: 20, paddingTop: 20, paddingBottom: 40},
+});

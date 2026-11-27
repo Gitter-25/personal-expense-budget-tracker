@@ -1,0 +1,2 @@
+# Phase 7 Android testing
+Run npm install (manifest changed; regenerate lockfile), npx expo-doctor, npx expo start --clear. Rebuild native dev client if needed. Test signup, wrong password, duplicate email, restart, logout, two accounts, add/edit/delete expense, monthly budget, chart across month boundary, profile editing, all navigation and airplane mode. Existing remote records are not imported. No external API. Review UI against original screenshots. Lockfile and runtime tests pending.

@@ -1,9 +1,16 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Tabs } from "expo-router";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import AddExpenseScreen from "../screens/AddExpenseScreen";
+import StatisticsScreen from "../screens/StatisticsScreen";
+import HomeScreen from "../screens/HomeScreen";
+import BudgetScreen from "../screens/BudgetScreen";
+import SettingsScreen from "../screens/SettingsScreen";
+const Tabs = createBottomTabNavigator();
 
 export default function TabsLayout() {
   return (
-    <Tabs
+    <Tabs.Navigator
+      initialRouteName="Home"
       screenOptions={{
         headerShown: false,
 
@@ -30,7 +37,7 @@ export default function TabsLayout() {
       }}
     >
       <Tabs.Screen
-        name="add-expense"
+        name="AddExpense" component={AddExpenseScreen}
         options={{
           title: "Add",
           tabBarIcon: ({ color, size }) => (
@@ -40,7 +47,7 @@ export default function TabsLayout() {
       />
 
       <Tabs.Screen
-        name="statistics"
+        name="Statistics" component={StatisticsScreen}
         options={{
           title: "Statistics",
           tabBarIcon: ({ color, size }) => (
@@ -50,7 +57,7 @@ export default function TabsLayout() {
       />
 
       <Tabs.Screen
-        name="index"
+        name="Home" component={HomeScreen}
         options={{
           title: "Home",
           tabBarIcon: ({ color, size }) => (
@@ -60,7 +67,7 @@ export default function TabsLayout() {
       />
 
       <Tabs.Screen
-        name="budget"
+        name="Budget" component={BudgetScreen}
         options={{
           title: "Budget",
           tabBarIcon: ({ color, size }) => (
@@ -70,7 +77,7 @@ export default function TabsLayout() {
       />
 
       <Tabs.Screen
-        name="settings"
+        name="Settings" component={SettingsScreen}
         options={{
           title: "Settings",
           tabBarIcon: ({ color, size }) => (
@@ -78,6 +85,6 @@ export default function TabsLayout() {
           ),
         }}
       />
-    </Tabs>
+    </Tabs.Navigator>
   );
 }

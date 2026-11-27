@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { useNavigation, useRoute, useFocusEffect } from "@react-navigation/native";
 import { useState } from "react";
 import {
   ActivityIndicator,
@@ -16,6 +16,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../context/AuthContext";
 
 export default function LoginScreen() {
+  const navigation = useNavigation();
   const { signIn } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -250,7 +251,7 @@ export default function LoginScreen() {
               </Text>
 
               <TouchableOpacity
-                onPress={() => router.push("/signup")}
+                onPress={() => navigation.navigate("Signup")}
                 disabled={loading}
                 accessibilityRole="button"
                 accessibilityLabel="Create a new account"

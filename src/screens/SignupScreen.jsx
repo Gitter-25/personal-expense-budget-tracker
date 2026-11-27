@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { useNavigation, useRoute, useFocusEffect } from "@react-navigation/native";
 import { useState } from "react";
 import {
   ActivityIndicator,
@@ -16,6 +16,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { registerUser } from "../storage/userStorage";
 
 export default function SignupScreen() {
+  const navigation = useNavigation();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -57,7 +58,7 @@ export default function SignupScreen() {
       // Register locally; no email confirmation or internet is required.
       await registerUser({ name, email: trimmedEmail, password, confirmPassword });
       Alert.alert("Account created", "You can now log in.", [
-        { text: "Go to Login", onPress: () => router.replace("/login") },
+        { text: "Go to Login", onPress: () => navigation.goBack() },
       ]);
     } catch (error) {
       const message =
@@ -348,7 +349,7 @@ export default function SignupScreen() {
               </Text>
 
               <TouchableOpacity
-                onPress={() => router.replace("/login")}
+                onPress={() => navigation.goBack()}
                 disabled={loading}
                 accessibilityRole="button"
                 accessibilityLabel="Go to login"

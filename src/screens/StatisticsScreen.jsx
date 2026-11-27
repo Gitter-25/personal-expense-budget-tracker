@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { router, useFocusEffect } from "expo-router";
+import { useNavigation, useRoute, useFocusEffect } from "@react-navigation/native";
 import { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -11,22 +11,14 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { supabase } from "../../lib/supabase";
+import { useAuth } from "../context/AuthContext";
+import { getExpenses, getExpenseById, addExpense, updateExpense, deleteExpense } from "../storage/expenseStorage";
+import { getMonthlyBudget, saveMonthlyBudget } from "../storage/budgetStorage";
+import { getCategoryOptions, toScreenExpense } from "../utils/finance";
 
-type Expense = {
-  id: string;
-  amount: number;
-  expense_date: string;
-  category_id: string | null;
-};
 
-type Category = {
-  id: string;
-  name: string;
-  icon: string | null;
-};
 
-const formatLocalDate = (date: Date) => {
+const formatLocalDate = (date) => {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
@@ -34,14 +26,14 @@ const formatLocalDate = (date: Date) => {
   return `${year}-${month}-${day}`;
 };
 
-const formatCurrency = (value: number) => {
+const formatCurrency = (value) => {
   return `₱${value.toLocaleString("en-PH", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}`;
 };
 
-const formatCompactCurrency = (value: number) => {
+const formatCompactCurrency = (value) => {
   if (value >= 1_000_000) {
     return `₱${(value / 1_000_000).toFixed(1)}M`;
   }
@@ -56,11 +48,13 @@ const formatCompactCurrency = (value: number) => {
 };
 
 export default function StatisticsScreen() {
-  const [expenses, setExpenses] = useState<Expense[]>([]);
-  const [lastSevenDayExpenses, setLastSevenDayExpenses] = useState<Expense[]>(
+  const navigation = useNavigation();
+  const { user } = useAuth();
+  const [expenses, setExpenses] = useState([]);
+  const [lastSevenDayExpenses, setLastSevenDayExpenses] = useState(
     [],
   );
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [categories, setCategories] = useState([]);
   const [monthlyBudget, setMonthlyBudget] = useState(0);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -89,71 +83,14 @@ export default function StatisticsScreen() {
       const queryStart =
         sevenDaysAgo < firstDayOfMonth ? sevenDaysAgo : firstDayOfMonth;
 
-      const [expenseResult, budgetResult] = await Promise.all([
-        supabase
-          .from("expenses")
-          .select("id, amount, expense_date, category_id")
-          .gte("expense_date", queryStart)
-          .lt("expense_date", firstDayOfNextMonth)
-          .order("expense_date", {
-            ascending: false,
-          }),
-
-        supabase
-          .from("budgets")
-          .select("amount")
-          .eq("month", firstDayOfMonth)
-          .maybeSingle(),
+      const [records, budget, categories] = await Promise.all([
+        getExpenses(user.id), getMonthlyBudget(user.id, firstDayOfMonth.slice(0, 7)), getCategoryOptions(user.id),
       ]);
-
-      const { data: expenseData, error: expenseError } = expenseResult;
-      const { data: budgetData, error: budgetError } = budgetResult;
-
-      if (expenseError) {
-        Alert.alert("Unable to load statistics", expenseError.message);
-        return;
-      }
-
-      if (budgetError) {
-        Alert.alert("Unable to load budget", budgetError.message);
-        return;
-      }
-
-      const allLoadedExpenses = expenseData ?? [];
-
-      const monthlyExpenses = allLoadedExpenses.filter(
-        (expense) =>
-          expense.expense_date >= firstDayOfMonth &&
-          expense.expense_date < firstDayOfNextMonth,
-      );
-
-      setExpenses(monthlyExpenses);
-      setLastSevenDayExpenses(allLoadedExpenses);
-      setMonthlyBudget(Number(budgetData?.amount ?? 0));
-
-      const categoryIds = [
-        ...new Set(
-          monthlyExpenses
-            .map((expense) => expense.category_id)
-            .filter((id): id is string => Boolean(id)),
-        ),
-      ];
-
-      if (categoryIds.length > 0) {
-        const { data: categoryData, error: categoryError } = await supabase
-          .from("categories")
-          .select("id, name, icon")
-          .in("id", categoryIds);
-
-        if (categoryError) {
-          Alert.alert("Unable to load categories", categoryError.message);
-          return;
-        }
-
-        setCategories(categoryData ?? []);
-      } else {
-        setCategories([]);
-      }
+      const all = records.map(toScreenExpense);
+      setExpenses(all.filter(e => e.expense_date >= firstDayOfMonth && e.expense_date < firstDayOfNextMonth));
+      setLastSevenDayExpenses(all.filter(e => e.expense_date >= sevenDaysAgo && e.expense_date <= formatLocalDate(now)));
+      setMonthlyBudget(budget?.amount ?? 0);
+      setCategories(categories);
     } catch (error) {
       console.error("Unexpected error loading statistics:", error);
 
@@ -295,7 +232,7 @@ export default function StatisticsScreen() {
 
           <TouchableOpacity
             className="h-12 w-12 items-center justify-center rounded-full border border-[#E3EDF8] bg-white"
-            onPress={() => router.push("/(tabs)/settings")}
+            onPress={() => navigation.navigate("Settings")}
             activeOpacity={0.8}
             accessibilityRole="button"
             accessibilityLabel="Open settings"
@@ -439,7 +376,7 @@ export default function StatisticsScreen() {
               ) : (
                 <TouchableOpacity
                   className="mt-5 flex-row items-center justify-center rounded-2xl bg-[#EAF4FF] px-4 py-3"
-                  onPress={() => router.push("/(tabs)/budget")}
+                  onPress={() => navigation.navigate("Budget")}
                   activeOpacity={0.8}
                   accessibilityRole="button"
                   accessibilityLabel="Set monthly budget"
@@ -549,7 +486,7 @@ export default function StatisticsScreen() {
 
                   <TouchableOpacity
                     className="mt-4 flex-row items-center rounded-xl bg-[#1677F2] px-4 py-2.5"
-                    onPress={() => router.push("/(tabs)/add-expense")}
+                    onPress={() => navigation.navigate("AddExpense")}
                     activeOpacity={0.85}
                     accessibilityRole="button"
                     accessibilityLabel="Add expense"

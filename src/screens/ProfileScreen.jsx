@@ -1,131 +1,14 @@
 import ProfileBackground from "../components/ProfileBackground";
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation, useRoute, useFocusEffect } from "@react-navigation/native";
-import { useEffect, useState } from "react";
-import {
-  ActivityIndicator,
-  Alert,
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  View,
-} from "react-native";
+
+import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { restoreSession } from "../storage/sessionStorage";
-import { updateUserName } from "../storage/userStorage";
+
+import styles from "../styles/ProfileScreen.styles";
+import useProfile from "../hooks/useProfile";
 
 export default function ProfileScreen() {
-  const navigation = useNavigation();
-  const [email, setEmail] = useState("");
-  const [fullName, setFullName] = useState("");
-  const [originalFullName, setOriginalFullName] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-
-  useEffect(() => {
-    loadProfile();
-  }, []);
-
-  const loadProfile = async () => {
-    try {
-      setLoading(true);
-
-      const user = await restoreSession();
-
-      if (!user) {
-        Alert.alert(
-          "Session error",
-          "Your account could not be verified. Please log in again.",
-        );
-
-        navigation.goBack();
-        return;
-      }
-
-      setEmail(user.email ?? "");
-
-      const loadedName = user.name;
-
-      setFullName(loadedName);
-      setOriginalFullName(loadedName);
-    } catch (error) {
-      console.error("Unexpected error loading profile:", error);
-
-      Alert.alert(
-        "Unable to load profile",
-        "An unexpected error occurred while loading your profile.",
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSave = async () => {
-    if (saving) return;
-
-    Keyboard.dismiss();
-
-    const trimmedName = fullName.trim();
-
-    if (!trimmedName) {
-      Alert.alert("Missing information", "Please enter your full name.");
-      return;
-    }
-
-    if (trimmedName.length < 2) {
-      Alert.alert("Invalid name", "Please enter at least 2 characters.");
-      return;
-    }
-
-    if (trimmedName === originalFullName.trim()) {
-      Alert.alert(
-        "No changes",
-        "Your profile information is already up to date.",
-      );
-      return;
-    }
-
-    try {
-      setSaving(true);
-
-      const user = await restoreSession();
-
-      if (!user) {
-        Alert.alert(
-          "Session error",
-          "Your session could not be verified. Please log in again.",
-        );
-
-        navigation.goBack();
-        return;
-      }
-
-      await updateUserName(user.id, trimmedName);
-
-      setFullName(trimmedName);
-      setOriginalFullName(trimmedName);
-
-      Alert.alert(
-        "Profile saved",
-        "Your profile has been updated successfully.",
-      );
-    } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : "An unexpected error occurred.";
-
-      Alert.alert("Unable to save profile", message);
-    } finally {
-      setSaving(false);
-    }
-  };
-
+  const { navigation, email, fullName, setFullName, loading, saving, handleSave, hasChanges } = useProfile();
   if (loading) {
     return (
       <SafeAreaView
@@ -141,8 +24,6 @@ export default function ProfileScreen() {
       </SafeAreaView>
     );
   }
-
-  const hasChanges = fullName.trim() !== originalFullName.trim();
 
   return (
     <SafeAreaView
@@ -285,35 +166,3 @@ export default function ProfileScreen() {
   );
 }
 
-// UI styles: edit these values during visual debugging.
-const styles = StyleSheet.create({
-  screen: {flex: 1, alignItems: "center", justifyContent: "center"},
-  screen2: {marginTop: 12, fontSize: 14, lineHeight: 20, color: "#718096"},
-  header: {marginBottom: 28, flexDirection: "row", alignItems: "center"},
-  header2: {marginRight: 12, height: 48, width: 48, alignItems: "center", justifyContent: "center", borderRadius: 16, borderWidth: 1, borderColor: "#E3EDF8", backgroundColor: "#FFFFFF"},
-  header3: {flex: 1},
-  header4: {fontSize: 26, fontWeight: "800", color: "#071B46"},
-  header5: {marginTop: 2, fontSize: 14, lineHeight: 20, color: "#66758D"},
-  profileSummary: {marginBottom: 20, alignItems: "center", borderRadius: 26, borderWidth: 1, borderColor: "#E3EDF8", backgroundColor: "#FFFFFF", padding: 20},
-  profileSummary2: {height: 80, width: 80, alignItems: "center", justifyContent: "center", borderRadius: 9999, backgroundColor: "#EAF3FF"},
-  profileSummary3: {marginTop: 16, maxWidth: "100%", fontSize: 22, fontWeight: "800", color: "#071B46"},
-  profileSummary4: {marginTop: 4, maxWidth: "100%", fontSize: 14, lineHeight: 20, color: "#718096"},
-  form: {borderRadius: 26, borderWidth: 1, borderColor: "#E3EDF8", backgroundColor: "#FFFFFF", padding: 20},
-  email: {marginBottom: 8, fontSize: 14, lineHeight: 20, fontWeight: "700", color: "#17335F"},
-  email2: {marginBottom: 20, flexDirection: "row", alignItems: "center", borderRadius: 16, borderWidth: 1, borderColor: "#D7E5F4", backgroundColor: "#F3F6FA", paddingHorizontal: 16},
-  email3: {marginHorizontal: 12, height: 28, width: 1, backgroundColor: "#DCE8F5"},
-  email4: {flexDirection: "row", alignItems: "center", borderRadius: 16, borderWidth: 1, borderColor: "#D7E5F4", backgroundColor: "#F8FBFF", paddingHorizontal: 16},
-  email5: {marginTop: 8, textAlign: "right", fontSize: 12, lineHeight: 16, color: "#94A3B8"},
-  saveState: {backgroundColor: "#7CB3F8"},
-  saveState2: {backgroundColor: "#1677F2"},
-  saveState3: {backgroundColor: "#B7D3F7"},
-  save: {marginTop: 20, minHeight: 56, flexDirection: "row", alignItems: "center", justifyContent: "center", borderRadius: 16},
-  save2: {marginLeft: 12, fontSize: 16, lineHeight: 24, fontWeight: "800", color: "#FFFFFF"},
-  save3: {marginHorizontal: 12, fontSize: 16, lineHeight: 24, fontWeight: "800", color: "#FFFFFF"},
-  save4: {marginTop: 24, alignItems: "center"},
-  save5: {fontSize: 14, lineHeight: 20, fontWeight: "500", fontStyle: "italic", color: "#79A9DB"},
-  layout: {flex: 1, backgroundColor: "#F4F9FF"},
-  scrollContent: {paddingHorizontal: 20, paddingTop: 20, paddingBottom: 40},
-  layout2: {flex: 1, minHeight: 54, color: "#66758D", fontSize: 16},
-  layout3: {flex: 1, minHeight: 54, color: "#071B46", fontSize: 16},
-});

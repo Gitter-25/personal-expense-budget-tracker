@@ -1,4 +1,4 @@
-import SettingsBackground from "../components/SettingsBackground";
+import Background from "../components/Background";
 import { Ionicons } from "@expo/vector-icons";
 import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View, Alert, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -74,7 +74,7 @@ export default function SettingsScreen() {
       style={styles.layout}
       edges={["top", "left", "right"]}
     >
-      <SettingsBackground />
+      <Background screen="Settings" />
       <ScrollView
         style={styles.header3}
         contentContainerStyle={styles.scrollContent}

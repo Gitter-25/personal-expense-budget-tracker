@@ -1,7 +1,7 @@
 import ExpenseDescriptionField from "../components/ExpenseDescriptionField";
 import ExpenseCategorySelector from "../components/ExpenseCategorySelector";
 import ExpenseAmountField from "../components/ExpenseAmountField";
-import EditExpenseBackground from "../components/EditExpenseBackground";
+import Background from "../components/Background";
 import { Ionicons } from "@expo/vector-icons";
 import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Text, TouchableOpacity, View, Alert, Keyboard, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -190,7 +190,7 @@ export default function EditExpenseScreen() {
       style={styles.layout}
       edges={["top", "left", "right", "bottom"]}
     >
-      <EditExpenseBackground />
+      <Background screen="EditExpense" />
       <KeyboardAvoidingView
         style={styles.header3}
         behavior={Platform.OS === "ios" ? "padding" : undefined}

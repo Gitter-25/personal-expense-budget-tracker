@@ -1,4 +1,4 @@
-import BudgetBackground from "../components/BudgetBackground";
+import Background from "../components/Background";
 import { Ionicons } from "@expo/vector-icons";
 import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View, Alert, Keyboard, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -130,7 +130,7 @@ export default function BudgetScreen() {
       style={styles.layout}
       edges={["top", "left", "right"]}
     >
-      <BudgetBackground />
+      <Background screen="Budget" />
       <KeyboardAvoidingView
         style={styles.hero3}
         behavior={Platform.OS === "ios" ? "padding" : undefined}

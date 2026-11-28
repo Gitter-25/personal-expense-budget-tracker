@@ -2,7 +2,7 @@ import InputField from "../components/InputField";
 import Button from "../components/Button";
 import Background from "../components/Background";
 import { Ionicons } from "@expo/vector-icons";
-import { KeyboardAvoidingView, Platform, ScrollView, Text, TouchableOpacity, View, Alert, StyleSheet } from "react-native";
+import { Keyboard, KeyboardAvoidingView, Platform, ScrollView, Text, TouchableOpacity, View, Alert, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { useState } from "react";
@@ -16,33 +16,36 @@ export default function SignupScreen() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [formError, setFormError] = useState("");
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   async function handleSignup() {
     if (loading) return;
+    Keyboard.dismiss();
+    setFormError("");
 
     const trimmedEmail = email.trim();
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!name.trim() || !trimmedEmail || !password || !confirmPassword) {
-      Alert.alert("Missing information", "Please complete all fields.");
+      setFormError("Please complete all fields.");
       return;
     }
 
     if (!emailPattern.test(trimmedEmail)) {
-      Alert.alert("Invalid email", "Please enter a valid email address.");
+      setFormError("Please enter a valid email address.");
       return;
     }
 
     if (password !== confirmPassword) {
-      Alert.alert("Password mismatch", "Passwords do not match.");
+      setFormError("Passwords do not match.");
       return;
     }
 
     if (password.length < 8) {
-      Alert.alert("Weak password", "Password must be at least 8 characters.");
+      setFormError("Password must be at least 8 characters.");
       return;
     }
 
@@ -60,7 +63,7 @@ export default function SignupScreen() {
           ? error.message
           : "An unexpected error occurred.";
 
-      Alert.alert("Signup failed", message);
+      setFormError(message);
     } finally {
       setLoading(false);
     }
@@ -78,9 +81,10 @@ export default function SignupScreen() {
         <ScrollView
           style={styles.pesotrackBranding4}
           contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
+          keyboardShouldPersistTaps="always"
+          keyboardDismissMode="on-drag"
           showsVerticalScrollIndicator={false}
-          bounces={false}
+          bounces={true}
         >
           {/* PesoTrack branding */}
           <View style={styles.pesotrackBranding}>
@@ -118,8 +122,9 @@ export default function SignupScreen() {
             <InputField label="Full Name" icon="person-outline" placeholder="Enter your full name" autoCapitalize="words" autoCorrect={false} autoComplete="name" textContentType="name" value={name} onChangeText={setName} editable={!loading} returnKeyType="next" />
             <InputField label="Email" icon="mail-outline" placeholder="Enter your email" keyboardType="email-address" autoCapitalize="none" autoCorrect={false} autoComplete="email" textContentType="emailAddress" value={email} onChangeText={setEmail} editable={!loading} returnKeyType="next" accessibilityLabel="Email address" />
             <InputField label="Password" icon="lock-closed-outline" visible={showPassword} onToggle={() => setShowPassword(v => !v)} bottom={20} placeholder="Create a password" autoCapitalize="none" autoCorrect={false} autoComplete="new-password" textContentType="newPassword" value={password} onChangeText={setPassword} editable={!loading} returnKeyType="next"  />
-            <InputField label="Confirm Password" icon="shield-checkmark-outline" visible={showConfirmPassword} onToggle={() => setShowConfirmPassword(v => !v)} bottom={12} placeholder="Confirm your password" autoCapitalize="none" autoCorrect={false} autoComplete="new-password" textContentType="newPassword" value={confirmPassword} onChangeText={setConfirmPassword} editable={!loading} returnKeyType="done" onSubmitEditing={handleSignup} />
+            <InputField label="Confirm Password" icon="shield-checkmark-outline" visible={showConfirmPassword} onToggle={() => setShowConfirmPassword(v => !v)} bottom={12} placeholder="Confirm your password" autoCapitalize="none" autoCorrect={false} autoComplete="new-password" textContentType="newPassword" value={confirmPassword} onChangeText={setConfirmPassword} editable={!loading} returnKeyType="done" />
             <Text style={styles.confirmPassword2}>Password must contain at least 8 characters.</Text>
+            {formError !== "" && <Text style={styles.formError}>{formError}</Text>}
             <Button title="Create Account" busyTitle="Creating account..." loading={loading} onPress={handleSignup} />
 
             {/* Login link */}
@@ -274,6 +279,12 @@ const styles = StyleSheet.create({
   layout: {
     flex: 1,
     backgroundColor: "#F4F9FF"
+  },
+
+  formError: {
+    color: "#B91C1C",
+    marginBottom: 12,
+    fontSize: 14
   },
 
   scrollContent: {

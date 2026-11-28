@@ -7,7 +7,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 
 export default function SettingsScreen() {
-
+  // Screen state and navigation.
   const navigation = useNavigation();
   const { user, signOut } = useAuth();
   const [email, setEmail] = useState("");
@@ -39,7 +39,7 @@ export default function SettingsScreen() {
     loadUser();
   }, [loadUser]);
 
-  const handleLogout = () => {
+  function handleLogout() {
     if (loggingOut) return;
 
     Alert.alert("Log Out", "Are you sure you want to log out of PesoTrack?", [
@@ -68,7 +68,7 @@ export default function SettingsScreen() {
         },
       },
     ]);
-  };
+  }
   return (
     <SafeAreaView
       style={styles.layout}

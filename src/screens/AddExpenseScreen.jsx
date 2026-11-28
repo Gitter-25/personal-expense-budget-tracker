@@ -11,7 +11,7 @@ import { addExpense } from "../storage/expenseStorage";
 import { getCategoryOptions } from "../utils/finance";
 
 export default function AddExpenseScreen() {
-
+  // Screen state and navigation.
   const { user } = useAuth();
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
@@ -24,7 +24,7 @@ export default function AddExpenseScreen() {
     loadCategories();
   }, []);
 
-  const loadCategories = async () => {
+  async function loadCategories() {
     try {
       setLoadingCategories(true);
 
@@ -39,9 +39,9 @@ export default function AddExpenseScreen() {
     } finally {
       setLoadingCategories(false);
     }
-  };
+  }
 
-  const getLocalDate = () => {
+  function getLocalDate() {
     const now = new Date();
 
     const year = now.getFullYear();
@@ -49,18 +49,18 @@ export default function AddExpenseScreen() {
     const day = String(now.getDate()).padStart(2, "0");
 
     return `${year}-${month}-${day}`;
-  };
+  }
 
-  const handleAmountChange = (value) => {
+  function handleAmountChange(value) {
     // Allow numbers with a maximum of two decimal places.
     const cleanedValue = value.replace(",", ".");
 
     if (/^\d*\.?\d{0,2}$/.test(cleanedValue)) {
       setAmount(cleanedValue);
     }
-  };
+  }
 
-  const handleSaveExpense = async () => {
+  async function handleSaveExpense() {
     if (saving) return;
 
     Keyboard.dismiss();
@@ -107,7 +107,7 @@ export default function AddExpenseScreen() {
     } finally {
       setSaving(false);
     }
-  };
+  }
   return (
     <SafeAreaView
       style={styles.layout}
@@ -115,25 +115,25 @@ export default function AddExpenseScreen() {
     >
       <Background screen="AddExpense" />
       <KeyboardAvoidingView
-        style={styles.tip3}
+        style={styles.flexContainer}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         <ScrollView
-          style={styles.tip3}
+          style={styles.flexContainer}
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
           {/* Header */}
           <View style={styles.header}>
-            <View style={styles.header2}>
+            <View style={styles.headerIcon}>
               <Ionicons name="add" size={28} color="#FFFFFF" />
             </View>
             <View>
-              <Text style={styles.header3}>
+              <Text style={styles.headerTitle}>
                 Add Expense
               </Text>
-              <Text style={styles.header4}>
+              <Text style={styles.headerSubtitle}>
                 Record your spending
               </Text>
             </View>
@@ -144,7 +144,7 @@ export default function AddExpenseScreen() {
         <ExpenseDescriptionField description={description} setDescription={setDescription} saving={saving} />
         {/* Save */}
           <TouchableOpacity
-            style={[styles.save, saving || loadingCategories ? styles.saveState : styles.saveState2]}
+            style={[styles.saveButton, saving || loadingCategories ? styles.disabledButton : styles.enabledButton]}
             onPress={handleSaveExpense}
             disabled={saving || loadingCategories}
             activeOpacity={0.85}
@@ -154,14 +154,14 @@ export default function AddExpenseScreen() {
             {saving ? (
               <>
                 <ActivityIndicator size="small" color="#FFFFFF" />
-                <Text style={styles.save2}>
+                <Text style={styles.savingText}>
                   Saving...
                 </Text>
               </>
             ) : (
               <>
                 <Ionicons name="add-circle-outline" size={22} color="#FFFFFF" />
-                <Text style={styles.save3}>
+                <Text style={styles.saveButtonText}>
                   Save Expense
                 </Text>
                 <Ionicons name="arrow-forward" size={22} color="#FFFFFF" />
@@ -171,16 +171,16 @@ export default function AddExpenseScreen() {
 
           {/* Tip */}
           <View style={styles.tip}>
-            <View style={styles.tip2}>
+            <View style={styles.tipIcon}>
               <Ionicons
                 name="information-circle-outline"
                 size={20}
                 color="#1677F2"
               />
             </View>
-            <View style={styles.tip3}>
-              <Text style={styles.tip4}>Quick tip</Text>
-              <Text style={styles.tip5}>
+            <View style={styles.flexContainer}>
+              <Text style={styles.tipTitle}>Quick tip</Text>
+              <Text style={styles.tipText}>
                 Choose the category that best matches your purchase so your
                 statistics stay accurate.
               </Text>
@@ -200,7 +200,7 @@ const styles = StyleSheet.create({
     alignItems: "center"
   },
 
-  header2: {
+  headerIcon: {
     marginRight: 12,
     height: 48,
     width: 48,
@@ -210,28 +210,28 @@ const styles = StyleSheet.create({
     backgroundColor: "#1677F2"
   },
 
-  header3: {
+  headerTitle: {
     fontSize: 25,
     fontWeight: "800",
     color: "#071B46"
   },
 
-  header4: {
+  headerSubtitle: {
     marginTop: 2,
     fontSize: 14,
     lineHeight: 20,
     color: "#66758D"
   },
 
-  saveState: {
+  disabledButton: {
     backgroundColor: "#7CB3F8"
   },
 
-  saveState2: {
+  enabledButton: {
     backgroundColor: "#1677F2"
   },
 
-  save: {
+  saveButton: {
     marginTop: 28,
     minHeight: 56,
     flexDirection: "row",
@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
     borderRadius: 16
   },
 
-  save2: {
+  savingText: {
     marginLeft: 12,
     fontSize: 16,
     lineHeight: 24,
@@ -248,7 +248,7 @@ const styles = StyleSheet.create({
     color: "#FFFFFF"
   },
 
-  save3: {
+  saveButtonText: {
     marginHorizontal: 12,
     fontSize: 16,
     lineHeight: 24,
@@ -265,7 +265,7 @@ const styles = StyleSheet.create({
     padding: 16
   },
 
-  tip2: {
+  tipIcon: {
     marginRight: 12,
     height: 36,
     width: 36,
@@ -275,16 +275,16 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF"
   },
 
-  tip3: {
+  flexContainer: {
     flex: 1
   },
 
-  tip4: {
+  tipTitle: {
     fontWeight: "700",
     color: "#17335F"
   },
 
-  tip5: {
+  tipText: {
     marginTop: 4,
     fontSize: 14,
     lineHeight: 20,

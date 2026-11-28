@@ -86,7 +86,11 @@ export default function ExpenseCategorySelector({ editing = false, loadCategorie
                       <View
                         style={[editing ? styles.category7 : styles.category15, selected ? styles.categoryState3 : styles.categoryState4]}
                       >
-                        <Text style={editing ? styles.category8 : styles.category16}>{item.icon ?? "📁"}</Text>
+                        <Ionicons
+                          name={item.icon || "folder-outline"}
+                          size={20}
+                          color={selected ? "#FFFFFF" : "#1677F2"}
+                        />
                       </View>
                       <Text
                         numberOfLines={1}

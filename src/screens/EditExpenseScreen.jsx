@@ -12,7 +12,7 @@ import { getExpenseById, updateExpense } from "../storage/expenseStorage";
 import { getCategoryOptions, toScreenExpense } from "../utils/finance";
 
 export default function EditExpenseScreen() {
-
+  // Screen state and navigation.
   const navigation = useNavigation();
   const { user } = useAuth();
   const { id } = useRoute().params ?? {};
@@ -28,7 +28,7 @@ export default function EditExpenseScreen() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    const loadExpense = async () => {
+    async function loadExpense() {
       if (!id) {
         Alert.alert("Missing expense", "Expense ID is missing.", [
           {
@@ -92,7 +92,7 @@ export default function EditExpenseScreen() {
     if (/^\d*\.?\d{0,2}$/.test(cleanedValue)) {
       setAmount(cleanedValue);
     }
-  };
+  }
 
   const hasChanges = useMemo(() => {
     if (!originalExpense) {
@@ -106,7 +106,7 @@ export default function EditExpenseScreen() {
     );
   }, [amount, description, categoryId, originalExpense]);
 
-  const handleSave = async () => {
+  async function handleSave() {
     if (saving) return;
 
     Keyboard.dismiss();
@@ -168,7 +168,7 @@ export default function EditExpenseScreen() {
     } finally {
       setSaving(false);
     }
-  };
+  }
   if (loading) {
     return (
       <SafeAreaView

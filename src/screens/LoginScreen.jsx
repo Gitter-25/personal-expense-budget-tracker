@@ -9,7 +9,7 @@ import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 
 export default function LoginScreen() {
-
+  // Screen state and navigation.
   const navigation = useNavigation();
   const { signIn } = useAuth();
   const [email, setEmail] = useState("");
@@ -17,7 +17,7 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleLogin = async () => {
+  async function handleLogin() {
     if (loading) return;
 
     const trimmedEmail = email.trim();
@@ -45,7 +45,7 @@ export default function LoginScreen() {
     } finally {
       setLoading(false);
     }
-  };
+  }
   return (
     <SafeAreaView
       style={styles.layout}

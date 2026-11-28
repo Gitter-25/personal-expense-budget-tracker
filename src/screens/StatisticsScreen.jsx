@@ -18,9 +18,6 @@ const formatLocalDate = (date) => {
   return `${year}-${month}-${day}`;
 };
 
-
-
-
 const formatCompactCurrency = (value) => {
   if (value >= 1_000_000) {
     return `₱${(value / 1_000_000).toFixed(1)}M`;
@@ -36,7 +33,7 @@ const formatCompactCurrency = (value) => {
 };
 
 export default function StatisticsScreen() {
-
+  // Screen state and navigation.
   const navigation = useNavigation();
   const { user } = useAuth();
   const [expenses, setExpenses] = useState([]);
@@ -68,9 +65,6 @@ export default function StatisticsScreen() {
       sevenDaysAgoDate.setDate(now.getDate() - 6);
 
       const sevenDaysAgo = formatLocalDate(sevenDaysAgoDate);
-
-      const queryStart =
-        sevenDaysAgo < firstDayOfMonth ? sevenDaysAgo : firstDayOfMonth;
 
       const [records, budget, categories] = await Promise.all([
         getExpenses(user.id), getMonthlyBudget(user.id, firstDayOfMonth.slice(0, 7)), getCategoryOptions(user.id),
@@ -191,16 +185,16 @@ export default function StatisticsScreen() {
       >
         {/* Top bar */}
         <View style={styles.topBar}>
-          <View style={styles.topBar2}>
-            <View style={styles.topBar3}>
+          <View style={styles.topBarTitleRow}>
+            <View style={styles.topBarIcon}>
               <Ionicons name="bar-chart" size={25} color="#FFFFFF" />
             </View>
-            <Text style={styles.topBar4}>
+            <Text style={styles.topBarTitle}>
               Statistics
             </Text>
           </View>
           <TouchableOpacity
-            style={styles.topBar5}
+            style={styles.settingsButton}
             onPress={() => navigation.navigate("Settings")}
             activeOpacity={0.8}
             accessibilityRole="button"
@@ -558,8 +552,6 @@ const styles = StyleSheet.create({
     color: "rgba(255, 255, 255, 0.7)"
   },
 
-
-
   statisticsBudgetCard_topBar2: {
     flexDirection: "row",
     alignItems: "center"
@@ -689,8 +681,6 @@ const styles = StyleSheet.create({
     color: "#1677F2"
   },
 
-
-
   weeklySpendingChart_header3: {
     flex: 1
   },
@@ -776,8 +766,6 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     color: "#65758B"
   },
-
-
 
   categoryBreakdown_topBar2: {
     flexDirection: "row",
@@ -942,8 +930,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#1677F2"
   },
 
-
-
   topBar: {
     marginBottom: 24,
     flexDirection: "row",
@@ -951,12 +937,12 @@ const styles = StyleSheet.create({
     justifyContent: "space-between"
   },
 
-  topBar2: {
+  topBarTitleRow: {
     flexDirection: "row",
     alignItems: "center"
   },
 
-  topBar3: {
+  topBarIcon: {
     marginRight: 12,
     height: 48,
     width: 48,
@@ -966,14 +952,14 @@ const styles = StyleSheet.create({
     backgroundColor: "#1677F2"
   },
 
-  topBar4: {
+  topBarTitle: {
     fontSize: 24,
     lineHeight: 32,
     fontWeight: "800",
     color: "#071B46"
   },
 
-  topBar5: {
+  settingsButton: {
     height: 48,
     width: 48,
     alignItems: "center",

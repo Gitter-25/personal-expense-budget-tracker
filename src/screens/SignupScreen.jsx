@@ -9,7 +9,7 @@ import { useState } from "react";
 import { registerUser } from "../storage/userStorage";
 
 export default function SignupScreen() {
-
+  // Screen state and navigation.
   const navigation = useNavigation();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -20,7 +20,7 @@ export default function SignupScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const handleSignup = async () => {
+  async function handleSignup() {
     if (loading) return;
 
     const trimmedEmail = email.trim();
@@ -64,7 +64,7 @@ export default function SignupScreen() {
     } finally {
       setLoading(false);
     }
-  };
+  }
   return (
     <SafeAreaView
       style={styles.layout}

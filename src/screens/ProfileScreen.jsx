@@ -8,7 +8,7 @@ import { restoreSession } from "../storage/sessionStorage";
 import { updateUserName } from "../storage/userStorage";
 
 export default function ProfileScreen() {
-
+  // Screen state and navigation.
   const navigation = useNavigation();
   const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
@@ -20,7 +20,7 @@ export default function ProfileScreen() {
     loadProfile();
   }, []);
 
-  const loadProfile = async () => {
+  async function loadProfile() {
     try {
       setLoading(true);
 
@@ -52,9 +52,9 @@ export default function ProfileScreen() {
     } finally {
       setLoading(false);
     }
-  };
+  }
 
-  const handleSave = async () => {
+  async function handleSave() {
     if (saving) return;
 
     Keyboard.dismiss();
@@ -113,7 +113,7 @@ export default function ProfileScreen() {
     } finally {
       setSaving(false);
     }
-  };
+  }
 
   const hasChanges = fullName.trim() !== originalFullName.trim();
   if (loading) {

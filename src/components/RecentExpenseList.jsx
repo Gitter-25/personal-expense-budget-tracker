@@ -1,6 +1,5 @@
-import { ActivityIndicator, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Text, TextInput, TouchableOpacity, View, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import styles from "../styles/HomeScreen.styles";
 import { formatCurrency } from "../utils/formatCurrency";
 const formatExpenseDate = (date) => {
   const [year, month, day] = date.split("-").map(Number);
@@ -142,3 +141,36 @@ export default function RecentExpenseList({ loadingExpenses, recentExpenses, nav
         )}
   </>;
 }
+
+// Styles for this UI.
+const styles = StyleSheet.create({
+  pesotrackBranding3: {flex: 1},
+  expenseContent: {alignItems: "center", borderRadius: 24, borderWidth: 1, borderColor: "#E3EDF8", backgroundColor: "#FFFFFF", paddingHorizontal: 20, paddingVertical: 40},
+  expenseContent2: {marginTop: 12, fontSize: 14, lineHeight: 20, color: "#718096"},
+  expenseContent3: {alignItems: "center", borderRadius: 24, borderWidth: 1, borderColor: "#E3EDF8", backgroundColor: "#FFFFFF", paddingHorizontal: 24, paddingVertical: 40},
+  expenseContent4: {height: 64, width: 64, alignItems: "center", justifyContent: "center", borderRadius: 9999, backgroundColor: "#EAF3FF"},
+  expenseContent5: {marginTop: 16, fontSize: 18, lineHeight: 28, fontWeight: "800", color: "#071B46"},
+  expenseContent6: {marginTop: 8, textAlign: "center", fontSize: 14, lineHeight: 20, color: "#7A879A"},
+  expenseContent7: {marginTop: 20, flexDirection: "row", alignItems: "center", borderRadius: 16, backgroundColor: "#1677F2", paddingHorizontal: 20, paddingVertical: 12},
+  expenseContent8: {marginLeft: 8, fontWeight: "700", color: "#FFFFFF"},
+  expenseContent9: {marginBottom: 16, overflow: "hidden", borderRadius: 24, borderWidth: 1, borderColor: "#E3EDF8", backgroundColor: "#FFFFFF"},
+  expenseContentState: {backgroundColor: "#FFC85A"},
+  expenseContentState2: {backgroundColor: "#8566F6"},
+  expenseContent10: {position: "absolute", bottom: 0, left: 0, top: 0, width: 6},
+  expenseContent11: {padding: 20},
+  expenseContent12: {flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between"},
+  expenseContent13: {marginRight: 12, flex: 1, flexDirection: "row"},
+  expenseContent14: {marginRight: 12, height: 56, width: 56, alignItems: "center", justifyContent: "center", borderRadius: 9999, backgroundColor: "#FFF6D9"},
+  expenseContent15: {fontSize: 24, lineHeight: 32},
+  expenseContent16: {fontSize: 17, fontWeight: "800", color: "#071B46"},
+  expenseContent17: {marginTop: 4, fontSize: 14, lineHeight: 20, color: "#6F7E92"},
+  expenseContent18: {marginTop: 8, flexDirection: "row", alignItems: "center"},
+  expenseContent19: {marginLeft: 6, fontSize: 12, lineHeight: 16, color: "#75859A"},
+  expenseContent20: {maxWidth: "38%", borderRadius: 9999, backgroundColor: "#FCE8F0", paddingHorizontal: 12, paddingVertical: 8},
+  expenseContent21: {fontWeight: "800", color: "#9B174C"},
+  expenseContent22: {marginTop: 16, flexDirection: "row"},
+  expenseContent23: {marginRight: 12, flexDirection: "row", alignItems: "center", borderRadius: 12, backgroundColor: "#EAF4FF", paddingHorizontal: 16, paddingVertical: 10},
+  expenseContent24: {marginLeft: 8, fontSize: 14, lineHeight: 20, fontWeight: "700", color: "#1677F2"},
+  expenseContent25: {flexDirection: "row", alignItems: "center", borderRadius: 12, backgroundColor: "#FDE9F0", paddingHorizontal: 16, paddingVertical: 10},
+  expenseContent26: {marginLeft: 8, fontSize: 14, lineHeight: 20, fontWeight: "700", color: "#E91E63"},
+});

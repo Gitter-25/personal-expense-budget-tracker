@@ -3,9 +3,8 @@ import ExpenseCategorySelector from "../components/ExpenseCategorySelector";
 import ExpenseAmountField from "../components/ExpenseAmountField";
 import AddExpenseBackground from "../components/AddExpenseBackground";
 import { Ionicons } from "@expo/vector-icons";
-import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Text, TouchableOpacity, View, Alert, Keyboard } from "react-native";
+import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Text, TouchableOpacity, View, Alert, Keyboard, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import styles from "../styles/AddExpenseScreen.styles";
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { addExpense } from "../storage/expenseStorage";
@@ -140,9 +139,9 @@ export default function AddExpenseScreen() {
             </View>
           </View>
 
-          <ExpenseAmountField styles={styles} amount={amount} handleAmountChange={handleAmountChange} saving={saving} />
-        <ExpenseCategorySelector styles={styles} loadCategories={loadCategories} categories={categories} categoryId={categoryId} setCategoryId={setCategoryId} saving={saving} loadingCategories={loadingCategories} />
-        <ExpenseDescriptionField styles={styles} description={description} setDescription={setDescription} saving={saving} />
+          <ExpenseAmountField amount={amount} handleAmountChange={handleAmountChange} saving={saving} />
+        <ExpenseCategorySelector loadCategories={loadCategories} categories={categories} categoryId={categoryId} setCategoryId={setCategoryId} saving={saving} loadingCategories={loadingCategories} />
+        <ExpenseDescriptionField description={description} setDescription={setDescription} saving={saving} />
         {/* Save */}
           <TouchableOpacity
             style={[styles.save, saving || loadingCategories ? styles.saveState : styles.saveState2]}
@@ -192,3 +191,23 @@ export default function AddExpenseScreen() {
     </SafeAreaView>
   );
 }
+
+// Styles for this screen.
+const styles = StyleSheet.create({
+  header: {marginBottom: 24, flexDirection: "row", alignItems: "center"},
+  header2: {marginRight: 12, height: 48, width: 48, alignItems: "center", justifyContent: "center", borderRadius: 16, backgroundColor: "#1677F2"},
+  header3: {fontSize: 25, fontWeight: "800", color: "#071B46"},
+  header4: {marginTop: 2, fontSize: 14, lineHeight: 20, color: "#66758D"},
+  saveState: {backgroundColor: "#7CB3F8"},
+  saveState2: {backgroundColor: "#1677F2"},
+  save: {marginTop: 28, minHeight: 56, flexDirection: "row", alignItems: "center", justifyContent: "center", borderRadius: 16},
+  save2: {marginLeft: 12, fontSize: 16, lineHeight: 24, fontWeight: "800", color: "#FFFFFF"},
+  save3: {marginHorizontal: 12, fontSize: 16, lineHeight: 24, fontWeight: "800", color: "#FFFFFF"},
+  tip: {marginTop: 20, flexDirection: "row", alignItems: "flex-start", borderRadius: 22, backgroundColor: "#EAF4FF", padding: 16},
+  tip2: {marginRight: 12, height: 36, width: 36, alignItems: "center", justifyContent: "center", borderRadius: 9999, backgroundColor: "#FFFFFF"},
+  tip3: {flex: 1},
+  tip4: {fontWeight: "700", color: "#17335F"},
+  tip5: {marginTop: 4, fontSize: 14, lineHeight: 20, color: "#66758D"},
+  layout: {flex: 1, backgroundColor: "#F4F9FF"},
+  scrollContent: {paddingHorizontal: 20, paddingTop: 20, paddingBottom: 40},
+});

@@ -1,6 +1,6 @@
 import { ActivityIndicator, Text, TouchableOpacity, View, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-export default function AuthButton({ title, busyTitle, loading, onPress }) {
+export default function Button({ title, busyTitle, loading, onPress }) {
   return <TouchableOpacity style={[styles.button, loading ? styles.disabled : styles.enabled]} onPress={onPress} disabled={loading} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel={title} accessibilityState={{disabled:loading}}>
     {loading && <ActivityIndicator size="small" color="#FFFFFF" />}
     <Text style={[styles.label, loading && styles.busy]}>{loading ? busyTitle : title}</Text>

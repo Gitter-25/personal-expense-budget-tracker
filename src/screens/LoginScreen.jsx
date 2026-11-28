@@ -1,6 +1,6 @@
-import AuthField from "../components/AuthField";
-import AuthButton from "../components/AuthButton";
-import LoginBackground from "../components/LoginBackground";
+import InputField from "../components/InputField";
+import Button from "../components/Button";
+import Background from "../components/Background";
 import { Ionicons } from "@expo/vector-icons";
 import { KeyboardAvoidingView, Platform, ScrollView, Text, TouchableOpacity, View, Alert, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -51,7 +51,7 @@ export default function LoginScreen() {
       style={styles.layout}
       edges={["top", "left", "right", "bottom"]}
     >
-      <LoginBackground />
+      <Background screen="Login" />
       <KeyboardAvoidingView
         style={styles.pesotrackBranding4}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -96,9 +96,9 @@ export default function LoginScreen() {
               </Text>
             </View>
 
-            <AuthField label="Email" icon="mail-outline" placeholder="Enter your email" keyboardType="email-address" autoCapitalize="none" autoCorrect={false} autoComplete="email" textContentType="emailAddress" value={email} onChangeText={setEmail} editable={!loading} returnKeyType="next" accessibilityLabel="Email address" />
-            <AuthField label="Password" icon="lock-closed-outline" visible={showPassword} onToggle={() => setShowPassword(v => !v)} bottom={28} placeholder="Enter your password" autoCapitalize="none" autoCorrect={false} autoComplete="password" textContentType="password" value={password} onChangeText={setPassword} editable={!loading} returnKeyType="done" onSubmitEditing={handleLogin} />
-            <AuthButton title="Login" busyTitle="Logging in..." loading={loading} onPress={handleLogin} />
+            <InputField label="Email" icon="mail-outline" placeholder="Enter your email" keyboardType="email-address" autoCapitalize="none" autoCorrect={false} autoComplete="email" textContentType="emailAddress" value={email} onChangeText={setEmail} editable={!loading} returnKeyType="next" accessibilityLabel="Email address" />
+            <InputField label="Password" icon="lock-closed-outline" visible={showPassword} onToggle={() => setShowPassword(v => !v)} bottom={28} placeholder="Enter your password" autoCapitalize="none" autoCorrect={false} autoComplete="password" textContentType="password" value={password} onChangeText={setPassword} editable={!loading} returnKeyType="done" onSubmitEditing={handleLogin} />
+            <Button title="Login" busyTitle="Logging in..." loading={loading} onPress={handleLogin} />
 
             {/* Signup */}
             <View style={styles.signup}>

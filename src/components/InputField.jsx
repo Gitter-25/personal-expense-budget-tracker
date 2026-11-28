@@ -1,7 +1,7 @@
 import { Text, TextInput, TouchableOpacity, View, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
-export default function AuthField({ label, icon, bottom = 20, visible, onToggle, editable = true, ...props }) {
+export default function InputField({ label, icon, bottom = 20, visible, onToggle, editable = true, ...props }) {
   return <>
     <Text style={styles.label}>{label}</Text>
     <View style={[styles.field, { marginBottom: bottom }]}>

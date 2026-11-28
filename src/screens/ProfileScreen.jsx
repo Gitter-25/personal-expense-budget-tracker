@@ -1,4 +1,4 @@
-import ProfileBackground from "../components/ProfileBackground";
+import Background from "../components/Background";
 import { Ionicons } from "@expo/vector-icons";
 import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View, Alert, Keyboard, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -137,7 +137,7 @@ export default function ProfileScreen() {
       style={styles.layout}
       edges={["top", "left", "right", "bottom"]}
     >
-      <ProfileBackground />
+      <Background screen="Profile" />
       <KeyboardAvoidingView
         style={styles.header3}
         behavior={Platform.OS === "ios" ? "padding" : undefined}

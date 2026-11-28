@@ -4,9 +4,8 @@ import StatisticsBudgetCard from "../components/StatisticsBudgetCard";
 import MonthlySpendingCard from "../components/MonthlySpendingCard";
 import StatisticsBackground from "../components/StatisticsBackground";
 import { Ionicons } from "@expo/vector-icons";
-import { ActivityIndicator, RefreshControl, ScrollView, Text, TouchableOpacity, View, Alert } from "react-native";
+import { ActivityIndicator, RefreshControl, ScrollView, Text, TouchableOpacity, View, Alert, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import styles from "../styles/StatisticsScreen.styles";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { useCallback, useMemo, useState } from "react";
 import { useAuth } from "../context/AuthContext";
@@ -235,3 +234,21 @@ export default function StatisticsScreen() {
     </SafeAreaView>
   );
 }
+
+// Styles for this UI.
+const styles = StyleSheet.create({
+  topBar: {marginBottom: 24, flexDirection: "row", alignItems: "center", justifyContent: "space-between"},
+  topBar2: {flexDirection: "row", alignItems: "center"},
+  topBar3: {marginRight: 12, height: 48, width: 48, alignItems: "center", justifyContent: "center", borderRadius: 16, backgroundColor: "#1677F2"},
+  topBar4: {fontSize: 24, lineHeight: 32, fontWeight: "800", color: "#071B46"},
+  topBar5: {height: 48, width: 48, alignItems: "center", justifyContent: "center", borderRadius: 9999, borderWidth: 1, borderColor: "#E3EDF8", backgroundColor: "#FFFFFF"},
+  header: {marginBottom: 24, flexDirection: "row", alignItems: "center"},
+  header2: {marginRight: 16, height: 70, width: 70, alignItems: "center", justifyContent: "center", borderRadius: 22, backgroundColor: "#E7F1FF"},
+  header3: {flex: 1},
+  header4: {fontSize: 32, fontWeight: "800", color: "#071B46"},
+  header5: {marginTop: 4, fontSize: 15, color: "#65758B"},
+  header6: {alignItems: "center", borderRadius: 24, borderWidth: 1, borderColor: "#E3EDF8", backgroundColor: "#FFFFFF", paddingHorizontal: 20, paddingVertical: 48},
+  header7: {marginTop: 12, fontSize: 14, lineHeight: 20, color: "#718096"},
+  layout: {flex: 1, backgroundColor: "#F4F9FF"},
+  scrollContent: {paddingHorizontal: 20, paddingTop: 20, paddingBottom: 40},
+});

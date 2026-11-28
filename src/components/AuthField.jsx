@@ -1,6 +1,5 @@
-import { Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Text, TextInput, TouchableOpacity, View, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import styles from "../styles/AuthField.styles";
 
 export default function AuthField({ label, icon, bottom = 20, visible, onToggle, editable = true, ...props }) {
   return <>
@@ -15,3 +14,12 @@ export default function AuthField({ label, icon, bottom = 20, visible, onToggle,
     </View>
   </>;
 }
+
+// Styles for this UI.
+const styles = StyleSheet.create({
+  label: {marginBottom:8,fontSize:14,lineHeight:20,fontWeight:"700",color:"#17335F"},
+  field: {flexDirection:"row",alignItems:"center",borderRadius:16,borderWidth:1,borderColor:"#D7E5F4",backgroundColor:"#F8FBFF",paddingHorizontal:16},
+  divider: {marginHorizontal:12,height:28,width:1,backgroundColor:"#DCE8F5"},
+  input: {flex:1,minHeight:56,color:"#071B46",fontSize:16},
+  toggle: {marginLeft:8,height:40,width:40,alignItems:"center",justifyContent:"center"},
+});

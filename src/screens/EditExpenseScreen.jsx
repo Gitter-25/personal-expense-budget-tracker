@@ -3,9 +3,8 @@ import ExpenseCategorySelector from "../components/ExpenseCategorySelector";
 import ExpenseAmountField from "../components/ExpenseAmountField";
 import EditExpenseBackground from "../components/EditExpenseBackground";
 import { Ionicons } from "@expo/vector-icons";
-import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Text, TouchableOpacity, View, Alert, Keyboard } from "react-native";
+import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Text, TouchableOpacity, View, Alert, Keyboard, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import styles from "../styles/EditExpenseScreen.styles";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../context/AuthContext";
@@ -224,9 +223,9 @@ export default function EditExpenseScreen() {
             </View>
           </View>
 
-          <ExpenseAmountField styles={styles} amount={amount} handleAmountChange={handleAmountChange} saving={saving} />
-        <ExpenseCategorySelector styles={styles} editing categories={categories} categoryId={categoryId} setCategoryId={setCategoryId} saving={saving} />
-        <ExpenseDescriptionField styles={styles} editing description={description} setDescription={setDescription} saving={saving} />
+          <ExpenseAmountField editing amount={amount} handleAmountChange={handleAmountChange} saving={saving} />
+        <ExpenseCategorySelector editing categories={categories} categoryId={categoryId} setCategoryId={setCategoryId} saving={saving} />
+        <ExpenseDescriptionField editing description={description} setDescription={setDescription} saving={saving} />
         {/* Save */}
           <TouchableOpacity
             disabled={saving || !hasChanges}
@@ -274,3 +273,22 @@ export default function EditExpenseScreen() {
     </SafeAreaView>
   );
 }
+
+// Styles for this screen.
+const styles = StyleSheet.create({
+  screen: {flex: 1, alignItems: "center", justifyContent: "center"},
+  screen2: {marginTop: 12, fontSize: 14, lineHeight: 20, color: "#718096"},
+  header: {marginBottom: 24, flexDirection: "row", alignItems: "center"},
+  header2: {marginRight: 12, height: 48, width: 48, alignItems: "center", justifyContent: "center", borderRadius: 16, borderWidth: 1, borderColor: "#E3EDF8", backgroundColor: "#FFFFFF"},
+  header3: {flex: 1},
+  header4: {fontSize: 25, fontWeight: "800", color: "#071B46"},
+  header5: {marginTop: 2, fontSize: 14, lineHeight: 20, color: "#66758D"},
+  saveState: {backgroundColor: "#7CB3F8"},
+  saveState2: {backgroundColor: "#1677F2"},
+  saveState3: {backgroundColor: "#B7D3F7"},
+  save: {marginTop: 20, minHeight: 56, flexDirection: "row", alignItems: "center", justifyContent: "center", borderRadius: 16},
+  save2: {marginLeft: 12, fontSize: 16, lineHeight: 24, fontWeight: "800", color: "#FFFFFF"},
+  save3: {marginHorizontal: 12, fontSize: 16, lineHeight: 24, fontWeight: "800", color: "#FFFFFF"},
+  layout: {flex: 1, backgroundColor: "#F4F9FF"},
+  scrollContent: {paddingHorizontal: 20, paddingTop: 20, paddingBottom: 32},
+});

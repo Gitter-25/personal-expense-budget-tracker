@@ -9,7 +9,7 @@ import { useAuth } from "../context/AuthContext";
 import { getMonthlyBudget, saveMonthlyBudget } from "../storage/budgetStorage";
 
 export default function BudgetScreen() {
-
+  // Screen state and navigation.
   const navigation = useNavigation();
   const { user } = useAuth();
   const [budget, setBudget] = useState("");
@@ -23,14 +23,14 @@ export default function BudgetScreen() {
     });
   }, []);
 
-  const getCurrentMonth = () => {
+  function getCurrentMonth() {
     const now = new Date();
 
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(
       2,
       "0",
     )}-01`;
-  };
+  }
 
   const loadBudget = useCallback(async () => {
     try {
@@ -67,15 +67,15 @@ export default function BudgetScreen() {
     }, [loadBudget]),
   );
 
-  const handleBudgetChange = (value) => {
+  function handleBudgetChange(value) {
     const cleanedValue = value.replace(",", ".");
 
     if (/^\d*\.?\d{0,2}$/.test(cleanedValue)) {
       setBudget(cleanedValue);
     }
-  };
+  }
 
-  const handleSave = async () => {
+  async function handleSave() {
     if (saving) return;
 
     Keyboard.dismiss();
@@ -124,7 +124,7 @@ export default function BudgetScreen() {
     } finally {
       setSaving(false);
     }
-  };
+  }
   return (
     <SafeAreaView
       style={styles.layout}

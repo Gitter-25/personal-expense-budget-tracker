@@ -3,24 +3,24 @@ import { Text, TextInput, View, StyleSheet } from "react-native";
 export default function ExpenseAmountField({ editing = false, amount, handleAmountChange, saving }) {
   const styles = editing ? editStyles : addStyles;
   return <>
-    <View style={styles.amount}>
-            <View style={styles.amount2}>
-              <View style={styles.amount3}>
-                <Text style={styles.amount4}>
+    <View style={styles.amountCard}>
+            <View style={styles.amountHeader}>
+              <View style={styles.currencyIcon}>
+                <Text style={styles.currencyIconText}>
                   ₱
                 </Text>
               </View>
-              <Text style={styles.amount5}>
+              <Text style={styles.amountTitle}>
                 Expense Amount
               </Text>
             </View>
-            <View style={styles.amount6}>
-              <Text style={styles.amount7}>
+            <View style={styles.inputContainer}>
+              <Text style={styles.currencySymbol}>
                 ₱
               </Text>
-              <View style={styles.amount8} />
+              <View style={styles.inputDivider} />
               <TextInput
-                style={styles.layout2}
+                style={styles.amountInput}
                 placeholder="0.00"
                 placeholderTextColor="#A0AEC0"
                 keyboardType="decimal-pad"
@@ -37,7 +37,7 @@ export default function ExpenseAmountField({ editing = false, amount, handleAmou
 
 // Add expense styles.
 const addStyles = StyleSheet.create({
-  amount: {
+  amountCard: {
     borderRadius: 26,
     borderWidth: 1,
     borderColor: "#E3EDF8",
@@ -45,13 +45,13 @@ const addStyles = StyleSheet.create({
     padding: 16
   },
 
-  amount2: {
+  amountHeader: {
     marginBottom: 16,
     flexDirection: "row",
     alignItems: "center"
   },
 
-  amount3: {
+  currencyIcon: {
     marginRight: 12,
     height: 36,
     width: 36,
@@ -61,19 +61,19 @@ const addStyles = StyleSheet.create({
     backgroundColor: "#EAF3FF"
   },
 
-  amount4: {
+  currencyIconText: {
     fontSize: 24,
     fontWeight: "800",
     color: "#17335F"
   },
 
-  amount5: {
+  amountTitle: {
     fontSize: 18,
     fontWeight: "800",
     color: "#071B46"
   },
 
-  amount6: {
+  inputContainer: {
     flexDirection: "row",
     alignItems: "center",
     borderRadius: 16,
@@ -83,21 +83,21 @@ const addStyles = StyleSheet.create({
     paddingHorizontal: 16
   },
 
-  amount7: {
+  currencySymbol: {
     marginRight: 12,
     fontSize: 26,
     fontWeight: "700",
     color: "#586A84"
   },
 
-  amount8: {
+  inputDivider: {
     marginRight: 12,
     height: 32,
     width: 1,
     backgroundColor: "#DCE8F5"
   },
 
-  layout2: {
+  amountInput: {
     flex: 1,
     minHeight: 54,
     color: "#071B46",
@@ -109,7 +109,7 @@ const addStyles = StyleSheet.create({
 
 // Edit expense styles.
 const editStyles = StyleSheet.create({
-  amount: {
+  amountCard: {
     borderRadius: 22,
     borderWidth: 1,
     borderColor: "#E3EDF8",
@@ -117,13 +117,13 @@ const editStyles = StyleSheet.create({
     padding: 16
   },
 
-  amount2: {
+  amountHeader: {
     marginBottom: 12,
     flexDirection: "row",
     alignItems: "center"
   },
 
-  amount3: {
+  currencyIcon: {
     marginRight: 12,
     height: 36,
     width: 36,
@@ -133,19 +133,19 @@ const editStyles = StyleSheet.create({
     backgroundColor: "#EAF3FF"
   },
 
-  amount4: {
+  currencyIconText: {
     fontSize: 21,
     fontWeight: "800",
     color: "#17335F"
   },
 
-  amount5: {
+  amountTitle: {
     fontSize: 18,
     fontWeight: "800",
     color: "#071B46"
   },
 
-  amount6: {
+  inputContainer: {
     flexDirection: "row",
     alignItems: "center",
     borderRadius: 16,
@@ -155,21 +155,21 @@ const editStyles = StyleSheet.create({
     paddingHorizontal: 16
   },
 
-  amount7: {
+  currencySymbol: {
     marginRight: 12,
     fontSize: 24,
     fontWeight: "700",
     color: "#586A84"
   },
 
-  amount8: {
+  inputDivider: {
     marginRight: 12,
     height: 28,
     width: 1,
     backgroundColor: "#DCE8F5"
   },
 
-  layout2: {
+  amountInput: {
     flex: 1,
     minHeight: 54,
     color: "#071B46",

@@ -37,27 +37,144 @@ export default function ExpenseDescriptionField({ editing = false, description, 
 
 // Add expense styles.
 const addStyles = StyleSheet.create({
-  amount: {borderRadius: 26, borderWidth: 1, borderColor: "#E3EDF8", backgroundColor: "#FFFFFF", padding: 16},
-  amount2: {marginBottom: 16, flexDirection: "row", alignItems: "center"},
-  category2: {marginBottom: 12, flexDirection: "row", alignItems: "center"},
-  category3: {marginRight: 12, height: 40, width: 40, alignItems: "center", justifyContent: "center", borderRadius: 9999, backgroundColor: "#EEF5FF"},
-  category4: {fontSize: 20, fontWeight: "800", color: "#071B46"},
-  description: {marginTop: 16},
-  description2: {marginLeft: 8, fontSize: 12, lineHeight: 16, color: "#94A3B8"},
-  description3: {borderRadius: 24, borderWidth: 1, borderColor: "#E3EDF8", backgroundColor: "#FFFFFF", padding: 16},
-  description4: {marginTop: 8, textAlign: "right", fontSize: 12, lineHeight: 16, color: "#94A3B8"},
-  layout3: {minHeight: 40, color: "#071B46", fontSize: 16, lineHeight: 22},
+  amount: {
+    borderRadius: 26,
+    borderWidth: 1,
+    borderColor: "#E3EDF8",
+    backgroundColor: "#FFFFFF",
+    padding: 16
+  },
+
+  amount2: {
+    marginBottom: 16,
+    flexDirection: "row",
+    alignItems: "center"
+  },
+
+  category2: {
+    marginBottom: 12,
+    flexDirection: "row",
+    alignItems: "center"
+  },
+
+  category3: {
+    marginRight: 12,
+    height: 40,
+    width: 40,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 9999,
+    backgroundColor: "#EEF5FF"
+  },
+
+  category4: {
+    fontSize: 20,
+    fontWeight: "800",
+    color: "#071B46"
+  },
+
+  description: {
+    marginTop: 16
+  },
+
+  description2: {
+    marginLeft: 8,
+    fontSize: 12,
+    lineHeight: 16,
+    color: "#94A3B8"
+  },
+
+  description3: {
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: "#E3EDF8",
+    backgroundColor: "#FFFFFF",
+    padding: 16
+  },
+
+  description4: {
+    marginTop: 8,
+    textAlign: "right",
+    fontSize: 12,
+    lineHeight: 16,
+    color: "#94A3B8"
+  },
+
+  layout3: {
+    minHeight: 40,
+    color: "#071B46",
+    fontSize: 16,
+    lineHeight: 22
+  },
+
 });
 
 // Edit expense styles.
 const editStyles = StyleSheet.create({
-  amount: {borderRadius: 22, borderWidth: 1, borderColor: "#E3EDF8", backgroundColor: "#FFFFFF", padding: 16},
-  amount2: {marginBottom: 12, flexDirection: "row", alignItems: "center"},
-  category2: {marginRight: 12, height: 40, width: 40, alignItems: "center", justifyContent: "center", borderRadius: 9999, backgroundColor: "#EEF5FF"},
-  category3: {fontSize: 20, fontWeight: "800", color: "#071B46"},
-  category4: {alignItems: "center", borderRadius: 22, borderWidth: 1, borderColor: "#E3EDF8", backgroundColor: "#FFFFFF", paddingHorizontal: 20, paddingVertical: 28},
-  description: {marginTop: 16},
-  description2: {marginLeft: 8, fontSize: 12, lineHeight: 16, color: "#94A3B8"},
-  description3: {marginTop: 8, textAlign: "right", fontSize: 12, lineHeight: 16, color: "#94A3B8"},
-  layout3: {minHeight: 72, color: "#071B46", fontSize: 16, lineHeight: 23},
+  amount: {
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: "#E3EDF8",
+    backgroundColor: "#FFFFFF",
+    padding: 16
+  },
+
+  amount2: {
+    marginBottom: 12,
+    flexDirection: "row",
+    alignItems: "center"
+  },
+
+  category2: {
+    marginRight: 12,
+    height: 40,
+    width: 40,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 9999,
+    backgroundColor: "#EEF5FF"
+  },
+
+  category3: {
+    fontSize: 20,
+    fontWeight: "800",
+    color: "#071B46"
+  },
+
+  category4: {
+    alignItems: "center",
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: "#E3EDF8",
+    backgroundColor: "#FFFFFF",
+    paddingHorizontal: 20,
+    paddingVertical: 28
+  },
+
+  description: {
+    marginTop: 16
+  },
+
+  description2: {
+    marginLeft: 8,
+    fontSize: 12,
+    lineHeight: 16,
+    color: "#94A3B8"
+  },
+
+  description3: {
+    marginTop: 8,
+    textAlign: "right",
+    fontSize: 12,
+    lineHeight: 16,
+    color: "#94A3B8"
+  },
+
+  layout3: {
+    minHeight: 72,
+    color: "#071B46",
+    fontSize: 16,
+    lineHeight: 23
+  },
+
 });

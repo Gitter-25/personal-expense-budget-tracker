@@ -69,16 +69,90 @@ export default function WeeklySpendingChart({ lastSevenDays, maxDailySpending })
 
 // Styles for this UI.
 const styles = StyleSheet.create({
-  header3: {flex: 1},
-  budget: {marginTop: 24, borderRadius: 26, borderWidth: 1, borderColor: "#E3EDF8", backgroundColor: "#FFFFFF", padding: 20},
-  budget3: {fontSize: 22, fontWeight: "800", color: "#071B46"},
-  last7Days: {marginBottom: 4, flexDirection: "row", alignItems: "center"},
-  last7Days2: {marginRight: 12, height: 48, width: 48, alignItems: "center", justifyContent: "center", borderRadius: 9999, backgroundColor: "#EEE9FF"},
-  last7Days3: {marginTop: 2, fontSize: 14, lineHeight: 20, color: "#718096"},
-  last7Days4: {marginTop: 24, flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between"},
-  last7Days5: {flex: 1, alignItems: "center"},
-  last7Days6: {marginBottom: 8, width: "100%", textAlign: "center", fontSize: 10, fontWeight: "600", color: "#17335F"},
-  last7Days7: {height: 120, width: 28, alignItems: "center", justifyContent: "flex-end", overflow: "hidden", borderRadius: 12, backgroundColor: "#F0F5FB"},
-  last7Days8: {width: "100%", borderRadius: 12, backgroundColor: "#4A84F5"},
-  last7Days9: {marginTop: 8, fontSize: 10, fontWeight: "500", color: "#65758B"},
+  header3: {
+    flex: 1
+  },
+
+  budget: {
+    marginTop: 24,
+    borderRadius: 26,
+    borderWidth: 1,
+    borderColor: "#E3EDF8",
+    backgroundColor: "#FFFFFF",
+    padding: 20
+  },
+
+  budget3: {
+    fontSize: 22,
+    fontWeight: "800",
+    color: "#071B46"
+  },
+
+  last7Days: {
+    marginBottom: 4,
+    flexDirection: "row",
+    alignItems: "center"
+  },
+
+  last7Days2: {
+    marginRight: 12,
+    height: 48,
+    width: 48,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 9999,
+    backgroundColor: "#EEE9FF"
+  },
+
+  last7Days3: {
+    marginTop: 2,
+    fontSize: 14,
+    lineHeight: 20,
+    color: "#718096"
+  },
+
+  last7Days4: {
+    marginTop: 24,
+    flexDirection: "row",
+    alignItems: "flex-end",
+    justifyContent: "space-between"
+  },
+
+  last7Days5: {
+    flex: 1,
+    alignItems: "center"
+  },
+
+  last7Days6: {
+    marginBottom: 8,
+    width: "100%",
+    textAlign: "center",
+    fontSize: 10,
+    fontWeight: "600",
+    color: "#17335F"
+  },
+
+  last7Days7: {
+    height: 120,
+    width: 28,
+    alignItems: "center",
+    justifyContent: "flex-end",
+    overflow: "hidden",
+    borderRadius: 12,
+    backgroundColor: "#F0F5FB"
+  },
+
+  last7Days8: {
+    width: "100%",
+    borderRadius: 12,
+    backgroundColor: "#4A84F5"
+  },
+
+  last7Days9: {
+    marginTop: 8,
+    fontSize: 10,
+    fontWeight: "500",
+    color: "#65758B"
+  },
+
 });

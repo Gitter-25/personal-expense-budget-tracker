@@ -276,19 +276,100 @@ export default function EditExpenseScreen() {
 
 // Styles for this screen.
 const styles = StyleSheet.create({
-  screen: {flex: 1, alignItems: "center", justifyContent: "center"},
-  screen2: {marginTop: 12, fontSize: 14, lineHeight: 20, color: "#718096"},
-  header: {marginBottom: 24, flexDirection: "row", alignItems: "center"},
-  header2: {marginRight: 12, height: 48, width: 48, alignItems: "center", justifyContent: "center", borderRadius: 16, borderWidth: 1, borderColor: "#E3EDF8", backgroundColor: "#FFFFFF"},
-  header3: {flex: 1},
-  header4: {fontSize: 25, fontWeight: "800", color: "#071B46"},
-  header5: {marginTop: 2, fontSize: 14, lineHeight: 20, color: "#66758D"},
-  saveState: {backgroundColor: "#7CB3F8"},
-  saveState2: {backgroundColor: "#1677F2"},
-  saveState3: {backgroundColor: "#B7D3F7"},
-  save: {marginTop: 20, minHeight: 56, flexDirection: "row", alignItems: "center", justifyContent: "center", borderRadius: 16},
-  save2: {marginLeft: 12, fontSize: 16, lineHeight: 24, fontWeight: "800", color: "#FFFFFF"},
-  save3: {marginHorizontal: 12, fontSize: 16, lineHeight: 24, fontWeight: "800", color: "#FFFFFF"},
-  layout: {flex: 1, backgroundColor: "#F4F9FF"},
-  scrollContent: {paddingHorizontal: 20, paddingTop: 20, paddingBottom: 32},
+  screen: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center"
+  },
+
+  screen2: {
+    marginTop: 12,
+    fontSize: 14,
+    lineHeight: 20,
+    color: "#718096"
+  },
+
+  header: {
+    marginBottom: 24,
+    flexDirection: "row",
+    alignItems: "center"
+  },
+
+  header2: {
+    marginRight: 12,
+    height: 48,
+    width: 48,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#E3EDF8",
+    backgroundColor: "#FFFFFF"
+  },
+
+  header3: {
+    flex: 1
+  },
+
+  header4: {
+    fontSize: 25,
+    fontWeight: "800",
+    color: "#071B46"
+  },
+
+  header5: {
+    marginTop: 2,
+    fontSize: 14,
+    lineHeight: 20,
+    color: "#66758D"
+  },
+
+  saveState: {
+    backgroundColor: "#7CB3F8"
+  },
+
+  saveState2: {
+    backgroundColor: "#1677F2"
+  },
+
+  saveState3: {
+    backgroundColor: "#B7D3F7"
+  },
+
+  save: {
+    marginTop: 20,
+    minHeight: 56,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 16
+  },
+
+  save2: {
+    marginLeft: 12,
+    fontSize: 16,
+    lineHeight: 24,
+    fontWeight: "800",
+    color: "#FFFFFF"
+  },
+
+  save3: {
+    marginHorizontal: 12,
+    fontSize: 16,
+    lineHeight: 24,
+    fontWeight: "800",
+    color: "#FFFFFF"
+  },
+
+  layout: {
+    flex: 1,
+    backgroundColor: "#F4F9FF"
+  },
+
+  scrollContent: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 32
+  },
+
 });

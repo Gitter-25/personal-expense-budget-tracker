@@ -225,38 +225,233 @@ export default function SettingsScreen() {
 
 // Styles for this UI.
 const styles = StyleSheet.create({
-  header: {marginBottom: 28, flexDirection: "row", alignItems: "center"},
-  header2: {marginRight: 12, height: 48, width: 48, alignItems: "center", justifyContent: "center", borderRadius: 16, backgroundColor: "#1677F2"},
-  header3: {flex: 1},
-  header4: {fontSize: 26, fontWeight: "800", color: "#071B46"},
-  header5: {marginTop: 2, fontSize: 14, lineHeight: 20, color: "#66758D"},
-  account: {borderRadius: 26, borderWidth: 1, borderColor: "#E3EDF8", backgroundColor: "#FFFFFF", padding: 20},
-  account2: {flexDirection: "row", alignItems: "center"},
-  account3: {marginRight: 16, height: 56, width: 56, alignItems: "center", justifyContent: "center", borderRadius: 9999, backgroundColor: "#EAF3FF"},
-  account4: {fontSize: 20, fontWeight: "800", color: "#071B46"},
-  account5: {marginTop: 8, flexDirection: "row", alignItems: "center"},
-  account6: {marginLeft: 8, fontSize: 14, lineHeight: 20, color: "#718096"},
-  account7: {marginTop: 8},
-  account8: {fontSize: 14, lineHeight: 20, color: "#D92D5E"},
-  account9: {marginTop: 8, alignSelf: "flex-start", flexDirection: "row", alignItems: "center"},
-  account10: {marginLeft: 4, fontSize: 14, lineHeight: 20, fontWeight: "700", color: "#1677F2"},
-  account11: {marginTop: 4, fontSize: 14, lineHeight: 20, color: "#66758D"},
-  profile: {marginTop: 24, flexDirection: "row", alignItems: "center", borderRadius: 16, backgroundColor: "#F7FAFF", paddingHorizontal: 16, paddingVertical: 16},
-  profile2: {marginRight: 12, height: 40, width: 40, alignItems: "center", justifyContent: "center", borderRadius: 9999, backgroundColor: "#E8F2FF"},
-  profile3: {fontWeight: "700", color: "#071B46"},
-  profile4: {marginTop: 2, fontSize: 12, lineHeight: 16, color: "#7A879A"},
-  appInformation: {marginTop: 20, borderRadius: 26, borderWidth: 1, borderColor: "#E3EDF8", backgroundColor: "#FFFFFF", padding: 20},
-  appInformation2: {marginRight: 12, height: 44, width: 44, alignItems: "center", justifyContent: "center", borderRadius: 9999, backgroundColor: "#EAF3FF"},
-  appInformation3: {fontSize: 18, fontWeight: "800", color: "#071B46"},
-  appInformation4: {marginTop: 4, fontSize: 14, lineHeight: 20, color: "#718096"},
-  logoutState: {backgroundColor: "#F5B5C5"},
-  logoutState2: {backgroundColor: "#FDE8EE"},
-  logout: {marginTop: 24, minHeight: 56, flexDirection: "row", alignItems: "center", justifyContent: "center", borderRadius: 16},
-  logout2: {marginLeft: 12, fontWeight: "800", color: "#D92D5E"},
-  logout3: {marginLeft: 8, fontWeight: "800", color: "#D92D5E"},
-  footer: {marginTop: 28, alignItems: "center"},
-  footer2: {fontSize: 12, lineHeight: 16, fontWeight: "500", color: "#9AA8B9"},
-  footer3: {marginTop: 4, fontSize: 11, color: "#AAB5C3"},
-  layout: {flex: 1, backgroundColor: "#F4F9FF"},
-  scrollContent: {paddingHorizontal: 20, paddingTop: 20, paddingBottom: 40},
+  header: {
+    marginBottom: 28,
+    flexDirection: "row",
+    alignItems: "center"
+  },
+
+  header2: {
+    marginRight: 12,
+    height: 48,
+    width: 48,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 16,
+    backgroundColor: "#1677F2"
+  },
+
+  header3: {
+    flex: 1
+  },
+
+  header4: {
+    fontSize: 26,
+    fontWeight: "800",
+    color: "#071B46"
+  },
+
+  header5: {
+    marginTop: 2,
+    fontSize: 14,
+    lineHeight: 20,
+    color: "#66758D"
+  },
+
+  account: {
+    borderRadius: 26,
+    borderWidth: 1,
+    borderColor: "#E3EDF8",
+    backgroundColor: "#FFFFFF",
+    padding: 20
+  },
+
+  account2: {
+    flexDirection: "row",
+    alignItems: "center"
+  },
+
+  account3: {
+    marginRight: 16,
+    height: 56,
+    width: 56,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 9999,
+    backgroundColor: "#EAF3FF"
+  },
+
+  account4: {
+    fontSize: 20,
+    fontWeight: "800",
+    color: "#071B46"
+  },
+
+  account5: {
+    marginTop: 8,
+    flexDirection: "row",
+    alignItems: "center"
+  },
+
+  account6: {
+    marginLeft: 8,
+    fontSize: 14,
+    lineHeight: 20,
+    color: "#718096"
+  },
+
+  account7: {
+    marginTop: 8
+  },
+
+  account8: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: "#D92D5E"
+  },
+
+  account9: {
+    marginTop: 8,
+    alignSelf: "flex-start",
+    flexDirection: "row",
+    alignItems: "center"
+  },
+
+  account10: {
+    marginLeft: 4,
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: "700",
+    color: "#1677F2"
+  },
+
+  account11: {
+    marginTop: 4,
+    fontSize: 14,
+    lineHeight: 20,
+    color: "#66758D"
+  },
+
+  profile: {
+    marginTop: 24,
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: 16,
+    backgroundColor: "#F7FAFF",
+    paddingHorizontal: 16,
+    paddingVertical: 16
+  },
+
+  profile2: {
+    marginRight: 12,
+    height: 40,
+    width: 40,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 9999,
+    backgroundColor: "#E8F2FF"
+  },
+
+  profile3: {
+    fontWeight: "700",
+    color: "#071B46"
+  },
+
+  profile4: {
+    marginTop: 2,
+    fontSize: 12,
+    lineHeight: 16,
+    color: "#7A879A"
+  },
+
+  appInformation: {
+    marginTop: 20,
+    borderRadius: 26,
+    borderWidth: 1,
+    borderColor: "#E3EDF8",
+    backgroundColor: "#FFFFFF",
+    padding: 20
+  },
+
+  appInformation2: {
+    marginRight: 12,
+    height: 44,
+    width: 44,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 9999,
+    backgroundColor: "#EAF3FF"
+  },
+
+  appInformation3: {
+    fontSize: 18,
+    fontWeight: "800",
+    color: "#071B46"
+  },
+
+  appInformation4: {
+    marginTop: 4,
+    fontSize: 14,
+    lineHeight: 20,
+    color: "#718096"
+  },
+
+  logoutState: {
+    backgroundColor: "#F5B5C5"
+  },
+
+  logoutState2: {
+    backgroundColor: "#FDE8EE"
+  },
+
+  logout: {
+    marginTop: 24,
+    minHeight: 56,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 16
+  },
+
+  logout2: {
+    marginLeft: 12,
+    fontWeight: "800",
+    color: "#D92D5E"
+  },
+
+  logout3: {
+    marginLeft: 8,
+    fontWeight: "800",
+    color: "#D92D5E"
+  },
+
+  footer: {
+    marginTop: 28,
+    alignItems: "center"
+  },
+
+  footer2: {
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: "500",
+    color: "#9AA8B9"
+  },
+
+  footer3: {
+    marginTop: 4,
+    fontSize: 11,
+    color: "#AAB5C3"
+  },
+
+  layout: {
+    flex: 1,
+    backgroundColor: "#F4F9FF"
+  },
+
+  scrollContent: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 40
+  },
+
 });

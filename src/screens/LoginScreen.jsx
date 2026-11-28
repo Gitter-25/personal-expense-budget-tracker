@@ -2,15 +2,51 @@ import AuthField from "../components/AuthField";
 import AuthButton from "../components/AuthButton";
 import LoginBackground from "../components/LoginBackground";
 import { Ionicons } from "@expo/vector-icons";
-
-import { KeyboardAvoidingView, Platform, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { KeyboardAvoidingView, Platform, ScrollView, Text, TouchableOpacity, View, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
 import styles from "../styles/LoginScreen.styles";
-import useLogin from "../hooks/useLogin";
+import { useNavigation } from "@react-navigation/native";
+import { useState } from "react";
+import { useAuth } from "../context/AuthContext";
 
 export default function LoginScreen() {
-  const { navigation, email, setEmail, password, setPassword, loading, showPassword, setShowPassword, handleLogin } = useLogin();
+
+  const navigation = useNavigation();
+  const { signIn } = useAuth();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  const handleLogin = async () => {
+    if (loading) return;
+
+    const trimmedEmail = email.trim();
+
+    if (!trimmedEmail || !password) {
+      Alert.alert(
+        "Missing information",
+        "Please enter your email and password.",
+      );
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      // Verify local credentials and persist the session.
+      await signIn(trimmedEmail, password);
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "An unexpected error occurred.";
+
+      Alert.alert("Login failed", message);
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <SafeAreaView
       style={styles.layout}
@@ -94,4 +130,3 @@ export default function LoginScreen() {
     </SafeAreaView>
   );
 }
-
